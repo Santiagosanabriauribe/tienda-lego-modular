@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda LEGO - Catalogo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>TIENDA LEGO</h1>
+            <p>Catalogo de Sets</p>
+        </div>
+    </header>
+
+    <main>
+        <section class="filtros">
+            <h2>Categorias</h2>
+            <div id="categorias-btns">
+                <button class="cat-btn active" data-id="todas">Todas</button>
+            </div>
+        </section>
+
+        <section class="catalogo">
+            <div id="productos-grid" class="productos-grid">
+                <p class="cargando">Cargando productos...</p>
+            </div>
+        </section>
+    </main>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Tienda LEGO &mdash; Proyecto Universitario 2026</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
