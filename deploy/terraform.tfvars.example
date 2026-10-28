@@ -1,0 +1,7 @@
+# Copia este archivo como terraform.tfvars y rellena tus valores
+# NO subas terraform.tfvars al repositorio
+
+aws_region    = "us-east-1"
+instance_type = "t2.micro"
+key_name      = "tu-key-pair-de-ec2"
+mongodb_uri   = "mongodb+srv://usuario:password@cluster.mongodb.net/tienda_lego?retryWrites=true&w=majority"

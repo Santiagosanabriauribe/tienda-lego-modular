@@ -24,5 +24,14 @@ mongo-data/
 node_modules/
 dist/
 
+# Uploads
+uploads/
+
 # Downloaded zip
 backend.zip
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+terraform.tfvars

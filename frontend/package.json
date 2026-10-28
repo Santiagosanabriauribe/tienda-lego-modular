@@ -1,0 +1,17 @@
+{
+  "name": "tienda-lego-frontend",
+  "version": "1.0.0",
+  "description": "Frontend de la Tienda en Linea Modular de LEGO",
+  "private": true,
+  "scripts": {
+    "build:css": "sass scss/styles.scss styles.css --no-source-map --style=compressed",
+    "watch:css": "sass scss/styles.scss styles.css --no-source-map --watch",
+    "serve": "python -m http.server 5500",
+    "dev": "concurrently \"npm run watch:css\" \"npm run serve\"",
+    "clean": "rm -f styles.css"
+  },
+  "devDependencies": {
+    "sass": "^1.77.0",
+    "concurrently": "^8.2.2"
+  }
+}

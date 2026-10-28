@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago - Tienda LEGO</title>
+    <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" style="color:white;text-decoration:none;font-size:1.1rem">Inicio</a>
+            <p>Realizar Pago</p>
+        </div>
+    </header>
+
+    <main>
+        <div class="form-container pago-container">
+            <h2>Metodo de Pago</h2>
+
+            <div id="resumen-compra" class="resumen-compra"></div>
+
+            <div class="metodos-pago">
+                <label class="metodo-opcion">
+                    <input type="radio" name="metodo" value="TARJETA" checked>
+                    <span>Tarjeta de credito / debito</span>
+                </label>
+                <label class="metodo-opcion">
+                    <input type="radio" name="metodo" value="PSE">
+                    <span>PSE (Pagos Seguros en Linea)</span>
+                </label>
+                <label class="metodo-opcion">
+                    <input type="radio" name="metodo" value="EFECTIVO">
+                    <span>Pago contra entrega</span>
+                </label>
+            </div>
+
+            <div id="form-tarjeta" class="form-pago">
+                <div class="form-group">
+                    <label for="numero-tarjeta">Numero de tarjeta</label>
+                    <input type="text" id="numero-tarjeta" placeholder="1234 5678 9012 3456" maxlength="19">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="vencimiento">Vencimiento</label>
+                        <input type="text" id="vencimiento" placeholder="MM/AA" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="cvv">CVV</label>
+                        <input type="text" id="cvv" placeholder="123" maxlength="4">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="titular">Nombre del titular</label>
+                    <input type="text" id="titular" placeholder="Como aparece en la tarjeta">
+                </div>
+            </div>
+
+            <div id="form-pse" class="form-pago hidden">
+                <div class="form-group">
+                    <label for="banco">Selecciona tu banco</label>
+                    <select id="banco">
+                        <option value="">-- Seleccionar banco --</option>
+                        <option value="bancolombia">Bancolombia</option>
+                        <option value="davivienda">Davivienda</option>
+                        <option value="bbva">BBVA</option>
+                        <option value="banco-bogota">Banco de Bogota</option>
+                        <option value="nequi">Nequi</option>
+                        <option value="daviplata">Daviplata</option>
+                    </select>
+                </div>
+                <p class="pse-nota">Seras redirigido al portal de tu banco para completar el pago.</p>
+            </div>
+
+            <div id="form-efectivo" class="form-pago hidden">
+                <p class="pse-nota">El pago se realizara al momento de recibir tu pedido. No se requiere informacion adicional.</p>
+            </div>
+
+            <div id="error-msg" class="error-msg hidden"></div>
+
+            <button class="btn-primary btn-comprar" id="btn-pagar" onclick="procesarPago()">Confirmar Pago</button>
+        </div>
+
+        <div id="confirmacion" class="form-container hidden">
+            <div class="confirmacion-exito">
+                <h2>Compra exitosa</h2>
+                <p>Tu pedido ha sido confirmado.</p>
+                <div id="detalle-pedido"></div>
+                <a href="index.html" class="btn-primary" style="display:inline-block;margin-top:1rem;text-decoration:none">Volver al catalogo</a>
+            </div>
+        </div>
+    </main>
+
+
+    <script src="csrf.js"></script>
+    <script src="pago.js?v=3"></script>
+</body>
+</html>
