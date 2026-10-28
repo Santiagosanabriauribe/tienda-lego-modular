@@ -24,7 +24,8 @@ public class PedidoService {
     }
 
     public Pedido crearDesdeCarrito(String carritoId, String usuarioId, String usuarioNombre,
-                                    String metodoPago) {
+                                    String metodoPago, String direccion, String ciudad,
+                                    String departamento, String telefono, String destinatario) {
         Carrito carrito = carritoRepo.findById(carritoId)
                 .orElseThrow(() -> new IllegalArgumentException("Carrito no encontrado"));
 
@@ -42,12 +43,23 @@ public class PedidoService {
             productoRepo.save(producto);
         }
 
+        if (direccion == null || direccion.isBlank() || ciudad == null || ciudad.isBlank()
+                || departamento == null || departamento.isBlank() || telefono == null || telefono.isBlank()
+                || destinatario == null || destinatario.isBlank()) {
+            throw new IllegalArgumentException("Todos los datos de envio son obligatorios");
+        }
+
         Pedido pedido = new Pedido();
         pedido.setUsuarioId(usuarioId);
         pedido.setUsuarioNombre(usuarioNombre);
         pedido.setItems(List.copyOf(carrito.getItems()));
         pedido.setTotal(carrito.getTotal());
         pedido.setMetodoPago(metodoPago);
+        pedido.setDireccionEnvio(direccion);
+        pedido.setCiudadEnvio(ciudad);
+        pedido.setDepartamentoEnvio(departamento);
+        pedido.setTelefonoEnvio(telefono);
+        pedido.setNombreDestinatario(destinatario);
 
         carrito.getItems().clear();
         carrito.setTotal(BigDecimal.ZERO);
@@ -58,7 +70,9 @@ public class PedidoService {
     }
 
     public Pedido crearDirecto(String productoId, int cantidad, String usuarioId,
-                                String usuarioNombre, String metodoPago) {
+                                String usuarioNombre, String metodoPago, String direccion,
+                                String ciudad, String departamento, String telefono,
+                                String destinatario) {
         Producto producto = productoRepo.findById(productoId)
                 .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
 
@@ -72,12 +86,23 @@ public class PedidoService {
         ItemCarrito item = new ItemCarrito(producto.getId(), producto.getNombre(),
                 cantidad, producto.getPrecio());
 
+        if (direccion == null || direccion.isBlank() || ciudad == null || ciudad.isBlank()
+                || departamento == null || departamento.isBlank() || telefono == null || telefono.isBlank()
+                || destinatario == null || destinatario.isBlank()) {
+            throw new IllegalArgumentException("Todos los datos de envio son obligatorios");
+        }
+
         Pedido pedido = new Pedido();
         pedido.setUsuarioId(usuarioId);
         pedido.setUsuarioNombre(usuarioNombre);
         pedido.setItems(List.of(item));
         pedido.setTotal(item.getSubtotal());
         pedido.setMetodoPago(metodoPago);
+        pedido.setDireccionEnvio(direccion);
+        pedido.setCiudadEnvio(ciudad);
+        pedido.setDepartamentoEnvio(departamento);
+        pedido.setTelefonoEnvio(telefono);
+        pedido.setNombreDestinatario(destinatario);
 
         return pedidoRepo.save(pedido);
     }

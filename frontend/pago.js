@@ -75,6 +75,18 @@ async function procesarPago() {
 
     const metodoPago = document.querySelector('input[name="metodo"]:checked').value;
 
+    const nombreDest = document.getElementById('nombre-dest').value.trim();
+    const direccion = document.getElementById('direccion').value.trim();
+    const ciudad = document.getElementById('ciudad').value.trim();
+    const departamento = document.getElementById('departamento').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
+
+    if (!nombreDest || !direccion || !ciudad || !departamento || !telefono) {
+        errorMsg.textContent = 'Completa todos los datos de envio';
+        errorMsg.classList.remove('hidden');
+        return;
+    }
+
     if (metodoPago === 'TARJETA') {
         const numero = document.getElementById('numero-tarjeta').value;
         const vencimiento = document.getElementById('vencimiento').value;
@@ -104,13 +116,22 @@ async function procesarPago() {
     try {
         let url, body;
 
+        const datosEnvio = {
+            direccionEnvio: direccion,
+            ciudadEnvio: ciudad,
+            departamentoEnvio: departamento,
+            telefonoEnvio: telefono,
+            nombreDestinatario: nombreDest
+        };
+
         if (tipo === 'carrito') {
             url = `${API}/pedidos/carrito`;
             body = {
                 carritoId,
                 usuarioId: usuario.id,
                 usuarioNombre: usuario.nombre,
-                metodoPago
+                metodoPago,
+                ...datosEnvio
             };
         } else {
             url = `${API}/pedidos/directo`;
@@ -119,7 +140,8 @@ async function procesarPago() {
                 cantidad: String(cantidad),
                 usuarioId: usuario.id,
                 usuarioNombre: usuario.nombre,
-                metodoPago
+                metodoPago,
+                ...datosEnvio
             };
         }
 

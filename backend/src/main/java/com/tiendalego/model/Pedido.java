@@ -22,6 +22,12 @@ public class Pedido {
     private String estado = "CONFIRMADO";
     private LocalDateTime fecha = LocalDateTime.now();
 
+    private String direccionEnvio;
+    private String ciudadEnvio;
+    private String departamentoEnvio;
+    private String telefonoEnvio;
+    private String nombreDestinatario;
+
     public Pedido() {}
 
     public String getId() { return id; }
@@ -47,4 +53,19 @@ public class Pedido {
 
     public LocalDateTime getFecha() { return fecha; }
     public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
+
+    public String getDireccionEnvio() { return direccionEnvio; }
+    public void setDireccionEnvio(String direccionEnvio) { this.direccionEnvio = direccionEnvio; }
+
+    public String getCiudadEnvio() { return ciudadEnvio; }
+    public void setCiudadEnvio(String ciudadEnvio) { this.ciudadEnvio = ciudadEnvio; }
+
+    public String getDepartamentoEnvio() { return departamentoEnvio; }
+    public void setDepartamentoEnvio(String departamentoEnvio) { this.departamentoEnvio = departamentoEnvio; }
+
+    public String getTelefonoEnvio() { return telefonoEnvio; }
+    public void setTelefonoEnvio(String telefonoEnvio) { this.telefonoEnvio = telefonoEnvio; }
+
+    public String getNombreDestinatario() { return nombreDestinatario; }
+    public void setNombreDestinatario(String nombreDestinatario) { this.nombreDestinatario = nombreDestinatario; }
 }

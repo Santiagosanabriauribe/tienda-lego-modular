@@ -30,7 +30,12 @@ public class PedidoController {
                     body.get("carritoId"),
                     body.get("usuarioId"),
                     body.get("usuarioNombre"),
-                    body.get("metodoPago")
+                    body.get("metodoPago"),
+                    body.get("direccionEnvio"),
+                    body.get("ciudadEnvio"),
+                    body.get("departamentoEnvio"),
+                    body.get("telefonoEnvio"),
+                    body.get("nombreDestinatario")
             );
             return ResponseEntity.status(HttpStatus.CREATED).body(pedido);
         } catch (IllegalArgumentException e) {
@@ -47,7 +52,12 @@ public class PedidoController {
                     Integer.parseInt(body.getOrDefault("cantidad", "1")),
                     body.get("usuarioId"),
                     body.get("usuarioNombre"),
-                    body.get("metodoPago")
+                    body.get("metodoPago"),
+                    body.get("direccionEnvio"),
+                    body.get("ciudadEnvio"),
+                    body.get("departamentoEnvio"),
+                    body.get("telefonoEnvio"),
+                    body.get("nombreDestinatario")
             );
             return ResponseEntity.status(HttpStatus.CREATED).body(pedido);
         } catch (IllegalArgumentException e) {

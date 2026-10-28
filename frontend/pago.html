@@ -76,6 +76,30 @@
                 <p class="pse-nota">El pago se realizara al momento de recibir tu pedido. No se requiere informacion adicional.</p>
             </div>
 
+            <h2 style="margin-top:2rem">Datos de Envio</h2>
+            <div class="form-group">
+                <label for="nombre-dest">Nombre del destinatario</label>
+                <input type="text" id="nombre-dest" required placeholder="Nombre completo de quien recibe">
+            </div>
+            <div class="form-group">
+                <label for="direccion">Direccion de envio</label>
+                <input type="text" id="direccion" required placeholder="Calle, numero, apartamento">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="ciudad">Ciudad</label>
+                    <input type="text" id="ciudad" required placeholder="Ej: Bucaramanga">
+                </div>
+                <div class="form-group">
+                    <label for="departamento">Departamento</label>
+                    <input type="text" id="departamento" required placeholder="Ej: Santander">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="telefono">Telefono de contacto</label>
+                <input type="tel" id="telefono" required placeholder="Ej: 3001234567" maxlength="15">
+            </div>
+
             <div id="error-msg" class="error-msg hidden"></div>
 
             <button class="btn-primary btn-comprar" id="btn-pagar" onclick="procesarPago()">Confirmar Pago</button>
