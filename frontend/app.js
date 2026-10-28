@@ -3,6 +3,7 @@ const API = '/api/v1';
 let categorias = [];
 let productos = [];
 let categoriaActiva = 'todas';
+let cantidadesCarrito = {};
 
 function getUsuario() {
     try { return JSON.parse(localStorage.getItem('usuario')); } catch { return null; }
@@ -58,6 +59,22 @@ async function cargarProductos() {
     }
 }
 
+async function cargarCarrito() {
+    const carritoId = localStorage.getItem('carritoId');
+    if (!carritoId) return;
+    try {
+        const res = await fetch(`${API}/carritos/${carritoId}`);
+        if (!res.ok) return;
+        const carrito = await res.json();
+        cantidadesCarrito = {};
+        if (carrito.items) {
+            carrito.items.forEach(item => {
+                cantidadesCarrito[item.productoId] = item.cantidad;
+            });
+        }
+    } catch { /* carrito no existe o error de red */ }
+}
+
 function renderCategorias() {
     const container = document.getElementById('categorias-btns');
     let html = '<button class="cat-btn active" data-id="todas">Todas</button>';
@@ -90,7 +107,9 @@ function renderProductos() {
         return;
     }
 
-    grid.innerHTML = productos.map(p => `
+    grid.innerHTML = productos.map(p => {
+        const enCarrito = cantidadesCarrito[p.id] || 0;
+        return `
         <div class="producto-card">
             <div class="producto-card-img" onclick="abrirDetalle('${p.id}')">
                 <img src="${p.imagenUrl || 'https://placehold.co/400x300/fafafa/ccc?text=LEGO'}"
@@ -108,14 +127,41 @@ function renderProductos() {
                     </span>
                 </div>
                 ${usuario && p.stock > 0 ? `
-                    <div class="producto-acciones">
-                        <button class="btn-agregar" onclick="agregarAlCarrito('${p.id}')">Agregar al carrito</button>
+                    <div class="producto-acciones" id="acciones-${p.id}">
+                        ${enCarrito > 0
+                            ? renderContador(p.id, enCarrito, p.stock)
+                            : `<button class="btn-agregar" onclick="agregarAlCarrito('${p.id}')">Agregar al carrito</button>`
+                        }
                         <button class="btn-comprar-ya" onclick="comprarDirecto('${p.id}')">Comprar</button>
                     </div>
                 ` : ''}
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
+}
+
+function renderContador(productoId, cantidad, stock) {
+    return `<div class="contador-carrito">
+        <button class="btn-cnt" onclick="cambiarCantidad('${productoId}', -1, ${stock})">-</button>
+        <span class="cnt-valor" id="cnt-${productoId}">${cantidad}</span>
+        <button class="btn-cnt" onclick="cambiarCantidad('${productoId}', 1, ${stock})" ${cantidad >= stock ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>+</button>
+    </div>`;
+}
+
+function actualizarBotonesProducto(productoId) {
+    const contenedor = document.getElementById(`acciones-${productoId}`);
+    if (!contenedor) return;
+    const p = productos.find(pr => pr.id === productoId);
+    if (!p) return;
+    const enCarrito = cantidadesCarrito[productoId] || 0;
+
+    const botonComprar = `<button class="btn-comprar-ya" onclick="comprarDirecto('${productoId}')">Comprar</button>`;
+
+    if (enCarrito > 0) {
+        contenedor.innerHTML = renderContador(productoId, enCarrito, p.stock) + botonComprar;
+    } else {
+        contenedor.innerHTML = `<button class="btn-agregar" onclick="agregarAlCarrito('${productoId}')">Agregar al carrito</button>` + botonComprar;
+    }
 }
 
 function formatoPrecio(precio) {
@@ -129,6 +175,7 @@ function abrirDetalle(id) {
     const modal = document.getElementById('modal');
     const body = document.getElementById('modal-body');
     const usuario = getUsuario();
+    const enCarrito = cantidadesCarrito[p.id] || 0;
 
     body.innerHTML = `
         <div class="modal-body-inner">
@@ -147,8 +194,11 @@ function abrirDetalle(id) {
                     </span>
                 </div>
                 ${usuario && p.stock > 0 ? `
-                    <div class="producto-acciones" style="margin-top:1rem">
-                        <button class="btn-agregar" onclick="agregarAlCarrito('${p.id}'); document.getElementById('modal').classList.add('hidden');">Agregar al carrito</button>
+                    <div class="producto-acciones" id="acciones-modal-${p.id}" style="margin-top:1rem">
+                        ${enCarrito > 0
+                            ? renderContadorModal(p.id, enCarrito, p.stock)
+                            : `<button class="btn-agregar" onclick="agregarAlCarrito('${p.id}')">Agregar al carrito</button>`
+                        }
                         <button class="btn-comprar-ya" onclick="comprarDirecto('${p.id}')">Comprar ahora</button>
                     </div>
                 ` : ''}
@@ -157,6 +207,14 @@ function abrirDetalle(id) {
     `;
 
     modal.classList.remove('hidden');
+}
+
+function renderContadorModal(productoId, cantidad, stock) {
+    return `<div class="contador-carrito">
+        <button class="btn-cnt" onclick="cambiarCantidad('${productoId}', -1, ${stock})">-</button>
+        <span class="cnt-valor" id="cnt-modal-${productoId}">${cantidad}</span>
+        <button class="btn-cnt" onclick="cambiarCantidad('${productoId}', 1, ${stock})" ${cantidad >= stock ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>+</button>
+    </div>`;
 }
 
 async function agregarAlCarrito(productoId) {
@@ -178,13 +236,64 @@ async function agregarAlCarrito(productoId) {
         });
 
         if (res.ok) {
-            alert('Producto agregado al carrito');
+            cantidadesCarrito[productoId] = (cantidadesCarrito[productoId] || 0) + 1;
+            actualizarBotonesProducto(productoId);
+            actualizarBotonesModal(productoId);
         } else {
             const data = await res.json();
-            alert(data.error || 'Error al agregar al carrito');
+            console.error(data.error);
         }
     } catch (err) {
-        alert('Error de conexion');
+        console.error('Error de conexion');
+    }
+}
+
+async function cambiarCantidad(productoId, delta, stock) {
+    const nuevaCantidad = (cantidadesCarrito[productoId] || 0) + delta;
+
+    if (nuevaCantidad > stock) return;
+
+    const carritoId = localStorage.getItem('carritoId');
+    if (!carritoId) return;
+
+    try {
+        if (nuevaCantidad <= 0) {
+            const res = await fetch(`${API}/carritos/${carritoId}/items/${productoId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                delete cantidadesCarrito[productoId];
+                actualizarBotonesProducto(productoId);
+                actualizarBotonesModal(productoId);
+            }
+        } else {
+            const res = await fetch(`${API}/carritos/${carritoId}/items?productoId=${productoId}&cantidad=${delta}`, {
+                method: 'POST'
+            });
+            if (res.ok) {
+                cantidadesCarrito[productoId] = nuevaCantidad;
+                actualizarBotonesProducto(productoId);
+                actualizarBotonesModal(productoId);
+            }
+        }
+    } catch (err) {
+        console.error('Error actualizando cantidad');
+    }
+}
+
+function actualizarBotonesModal(productoId) {
+    const contenedor = document.getElementById(`acciones-modal-${productoId}`);
+    if (!contenedor) return;
+    const p = productos.find(pr => pr.id === productoId);
+    if (!p) return;
+    const enCarrito = cantidadesCarrito[productoId] || 0;
+
+    const botonComprar = `<button class="btn-comprar-ya" onclick="comprarDirecto('${productoId}')">Comprar ahora</button>`;
+
+    if (enCarrito > 0) {
+        contenedor.innerHTML = renderContadorModal(productoId, enCarrito, p.stock) + botonComprar;
+    } else {
+        contenedor.innerHTML = `<button class="btn-agregar" onclick="agregarAlCarrito('${productoId}')">Agregar al carrito</button>` + botonComprar;
     }
 }
 
@@ -212,4 +321,4 @@ document.addEventListener('keydown', (e) => {
 
 renderNav();
 cargarCategorias();
-cargarProductos();
+cargarCarrito().then(() => cargarProductos());

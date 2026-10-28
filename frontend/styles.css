@@ -224,6 +224,45 @@ main {
   font-size: 0.8rem;
 }
 
+.contador-carrito {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex: 1;
+  background: #fff;
+  border: 2px solid #d32f2f;
+  border-radius: 6px;
+  padding: 0.3rem 0.4rem;
+}
+.contador-carrito .btn-cnt {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #d32f2f;
+  color: white;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  line-height: 1;
+  padding: 0;
+}
+.contador-carrito .btn-cnt:hover {
+  background: #b71c1c;
+}
+.contador-carrito .cnt-valor {
+  font-weight: 700;
+  font-size: 0.95rem;
+  min-width: 20px;
+  text-align: center;
+  color: #d32f2f;
+}
+
 .cargando,
 .sin-productos {
   grid-column: 1/-1;
@@ -422,6 +461,13 @@ main {
 }
 .btn-secondary:hover {
   background: #ddd;
+}
+
+.field-error {
+  display: block;
+  color: #c62828;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
 }
 
 .error-msg {

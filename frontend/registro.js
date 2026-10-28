@@ -1,24 +1,44 @@
 const API = '/api/v1';
 
+const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const emailError = document.getElementById('email-error');
+const passwordError = document.getElementById('password-error');
+
+emailInput.addEventListener('input', () => {
+    if (emailInput.value && !emailRegex.test(emailInput.value)) {
+        emailError.classList.remove('hidden');
+    } else {
+        emailError.classList.add('hidden');
+    }
+});
+
+passwordInput.addEventListener('input', () => {
+    if (passwordInput.value && passwordInput.value.length < 8) {
+        passwordError.classList.remove('hidden');
+    } else {
+        passwordError.classList.add('hidden');
+    }
+});
+
 document.getElementById('registro-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const errorMsg = document.getElementById('error-msg');
     errorMsg.classList.add('hidden');
 
     const nombre = document.getElementById('nombre').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const email = emailInput.value;
+    const password = passwordInput.value;
 
-    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
     if (!emailRegex.test(email)) {
-        errorMsg.textContent = 'Ingresa un correo electronico valido';
-        errorMsg.classList.remove('hidden');
+        emailError.classList.remove('hidden');
         return;
     }
 
     if (password.length < 8) {
-        errorMsg.textContent = 'La contraseña debe tener minimo 8 caracteres';
-        errorMsg.classList.remove('hidden');
+        passwordError.classList.remove('hidden');
         return;
     }
 
