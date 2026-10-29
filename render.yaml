@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: tienda-lego
+    runtime: docker
+    repo: https://github.com/Santiagosanabriauribe/tienda-lego-modular.git
+    branch: seguridad
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx256m
