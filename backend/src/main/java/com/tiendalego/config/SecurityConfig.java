@@ -40,8 +40,8 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
                                 "default-src 'self'; "
-                                        + "script-src 'self' 'unsafe-inline'; "
-                                        + "style-src 'self' 'unsafe-inline'; "
+                                        + "script-src 'self'; "
+                                        + "style-src 'self'; "
                                         + "img-src 'self' data: https:; "
                                         + "font-src 'self'; "
                                         + "frame-ancestors 'none'"
@@ -56,7 +56,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedOriginPatterns(List.of("https://3.87.114.44", "http://localhost:*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

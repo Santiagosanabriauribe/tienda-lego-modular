@@ -5,6 +5,16 @@ if (!usuario || usuario.rol !== 'ADMIN') {
     window.location.href = 'index.html';
 }
 
+function adminHeaders(extra = {}) {
+    return { 'X-Usuario-Id': usuario.id, ...extra };
+}
+
+function esc(str) {
+    const el = document.createElement('span');
+    el.textContent = String(str ?? '');
+    return el.innerHTML;
+}
+
 function renderNav() {
     const nav = document.getElementById('nav-links');
     nav.innerHTML = `
@@ -21,7 +31,6 @@ function renderNav() {
     });
 }
 
-// Tabs
 document.querySelectorAll('.admin-tab').forEach(tab => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
@@ -33,35 +42,43 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
     });
 });
 
-// ---- CATEGORIAS ----
+let categoriasCache = [];
+
 async function cargarCategorias() {
     const res = await fetch(`${API}/categorias/todas`);
-    const cats = await res.json();
+    categoriasCache = await res.json();
 
     const select = document.getElementById('prod-categoriaId');
     select.innerHTML = '<option value="">Seleccionar categoria</option>';
-    cats.forEach(c => {
-        select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+    categoriasCache.forEach(c => {
+        select.innerHTML += `<option value="${esc(c.id)}">${esc(c.nombre)}</option>`;
     });
 
     const lista = document.getElementById('lista-categorias');
-    if (cats.length === 0) {
+    if (categoriasCache.length === 0) {
         lista.innerHTML = '<p>No hay categorias.</p>';
         return;
     }
-    lista.innerHTML = cats.map(c => `
+    lista.innerHTML = categoriasCache.map(c => `
         <div class="admin-item">
             <div>
-                <strong>${c.nombre}</strong>
-                <span class="admin-item-desc">${c.descripcion || ''}</span>
+                <strong>${esc(c.nombre)}</strong>
+                <span class="admin-item-desc">${esc(c.descripcion)}</span>
                 <span class="admin-item-badge ${c.activa ? 'activa' : 'inactiva'}">${c.activa ? 'Activa' : 'Inactiva'}</span>
             </div>
             <div class="admin-item-acciones">
-                <button onclick="editarCategoria('${c.id}', '${c.nombre}', '${c.descripcion || ''}')">Editar</button>
-                <button onclick="eliminarCategoria('${c.id}')">Eliminar</button>
+                <button data-action="editar-cat" data-id="${esc(c.id)}" data-nombre="${esc(c.nombre)}" data-desc="${esc(c.descripcion)}">Editar</button>
+                <button data-action="eliminar-cat" data-id="${esc(c.id)}">Eliminar</button>
             </div>
         </div>
     `).join('');
+
+    lista.querySelectorAll('[data-action="editar-cat"]').forEach(btn => {
+        btn.addEventListener('click', () => editarCategoria(btn.dataset.id, btn.dataset.nombre, btn.dataset.desc));
+    });
+    lista.querySelectorAll('[data-action="eliminar-cat"]').forEach(btn => {
+        btn.addEventListener('click', () => eliminarCategoria(btn.dataset.id));
+    });
 }
 
 document.getElementById('form-categoria').addEventListener('submit', async (e) => {
@@ -75,13 +92,13 @@ document.getElementById('form-categoria').addEventListener('submit', async (e) =
     if (id) {
         await fetch(`${API}/categorias/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: adminHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(body)
         });
     } else {
         await fetch(`${API}/categorias`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: adminHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(body)
         });
     }
@@ -105,41 +122,52 @@ function cancelarCategoria() {
 }
 
 async function eliminarCategoria(id) {
-    if (confirm('¿Eliminar esta categoria?')) {
-        await fetch(`${API}/categorias/${id}`, { method: 'DELETE' });
+    if (confirm('Eliminar esta categoria?')) {
+        await fetch(`${API}/categorias/${id}`, { method: 'DELETE', headers: adminHeaders() });
         cargarCategorias();
     }
 }
 
-// ---- PRODUCTOS ----
+let productosCache = [];
+
 async function cargarProductos() {
     const res = await fetch(`${API}/productos/todos`);
-    const prods = await res.json();
+    productosCache = await res.json();
 
     const lista = document.getElementById('lista-productos');
-    if (prods.length === 0) {
+    if (productosCache.length === 0) {
         lista.innerHTML = '<p>No hay productos.</p>';
         return;
     }
-    lista.innerHTML = prods.map(p => `
+    lista.innerHTML = productosCache.map(p => `
         <div class="admin-item">
             <div style="display:flex;align-items:center;gap:0.75rem">
                 <img src="${p.imagenUrl || 'https://placehold.co/50x50/eee/999?text=?'}"
-                     alt="${p.nombre}"
+                     alt="${esc(p.nombre)}"
                      style="width:50px;height:50px;object-fit:cover;border-radius:4px"
                      onerror="this.src='https://placehold.co/50x50/eee/999?text=?'">
                 <div>
-                    <strong>${p.nombre}</strong>
-                    ${p.numeroSet ? `<span class="admin-item-desc">Set #${p.numeroSet}</span>` : ''}
+                    <strong>${esc(p.nombre)}</strong>
+                    ${p.numeroSet ? `<span class="admin-item-desc">Set #${esc(p.numeroSet)}</span>` : ''}
                     <span class="admin-item-desc">$ ${Number(p.precio).toLocaleString('es-CO')} COP | Stock: ${p.stock}</span>
                 </div>
             </div>
             <div class="admin-item-acciones">
-                <button onclick='editarProducto(${JSON.stringify(p)})'>Editar</button>
-                <button onclick="eliminarProducto('${p.id}')">Eliminar</button>
+                <button data-action="editar-prod" data-id="${esc(p.id)}">Editar</button>
+                <button data-action="eliminar-prod" data-id="${esc(p.id)}">Eliminar</button>
             </div>
         </div>
     `).join('');
+
+    lista.querySelectorAll('[data-action="editar-prod"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const prod = productosCache.find(pr => pr.id === btn.dataset.id);
+            if (prod) editarProducto(prod);
+        });
+    });
+    lista.querySelectorAll('[data-action="eliminar-prod"]').forEach(btn => {
+        btn.addEventListener('click', () => eliminarProducto(btn.dataset.id));
+    });
 }
 
 document.getElementById('prod-archivo').addEventListener('change', async (e) => {
@@ -153,7 +181,7 @@ document.getElementById('prod-archivo').addEventListener('change', async (e) => 
     formData.append('archivo', archivo);
 
     try {
-        const res = await fetch(`${API}/imagenes`, { method: 'POST', body: formData });
+        const res = await fetch(`${API}/imagenes`, { method: 'POST', headers: adminHeaders(), body: formData });
         const data = await res.json();
         document.getElementById('prod-imagenUrl').value = data.url;
         estado.textContent = 'Imagen subida';
@@ -180,13 +208,13 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
     if (id) {
         await fetch(`${API}/productos/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: adminHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(body)
         });
     } else {
         await fetch(`${API}/productos`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: adminHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(body)
         });
     }
@@ -220,15 +248,14 @@ function cancelarProducto() {
 }
 
 async function eliminarProducto(id) {
-    if (confirm('¿Eliminar este producto?')) {
-        await fetch(`${API}/productos/${id}`, { method: 'DELETE' });
+    if (confirm('Eliminar este producto?')) {
+        await fetch(`${API}/productos/${id}`, { method: 'DELETE', headers: adminHeaders() });
         cargarProductos();
     }
 }
 
-// ---- PEDIDOS ----
 async function cargarPedidos() {
-    const res = await fetch(`${API}/pedidos`);
+    const res = await fetch(`${API}/pedidos`, { headers: adminHeaders() });
     const pedidos = await res.json();
     const lista = document.getElementById('lista-pedidos');
 
@@ -240,13 +267,13 @@ async function cargarPedidos() {
     lista.innerHTML = pedidos.map(p => `
         <div class="admin-item pedido-item">
             <div>
-                <strong>Pedido ${p.id.substring(0, 8)}...</strong>
-                <span class="admin-item-desc">${p.usuarioNombre} | ${p.metodoPago} | ${new Date(p.fecha).toLocaleDateString('es-CO')}</span>
-                <span class="admin-item-desc">Items: ${p.items.map(i => i.productoNombre + ' x' + i.cantidad).join(', ')}</span>
+                <strong>Pedido ${esc(p.id.substring(0, 8))}...</strong>
+                <span class="admin-item-desc">${esc(p.usuarioNombre)} | ${esc(p.metodoPago)} | ${new Date(p.fecha).toLocaleDateString('es-CO')}</span>
+                <span class="admin-item-desc">Items: ${p.items.map(i => esc(i.productoNombre) + ' x' + i.cantidad).join(', ')}</span>
             </div>
             <div>
                 <strong>$ ${Number(p.total).toLocaleString('es-CO')} COP</strong>
-                <span class="admin-item-badge activa">${p.estado}</span>
+                <span class="admin-item-badge activa">${esc(p.estado)}</span>
             </div>
         </div>
     `).join('');

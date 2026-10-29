@@ -5,13 +5,19 @@ if (!usuario) {
     window.location.href = 'login.html';
 }
 
+function esc(str) {
+    const el = document.createElement('span');
+    el.textContent = str;
+    return el.innerHTML;
+}
+
 function renderNav() {
     const nav = document.getElementById('nav-links');
     if (!usuario) return;
     nav.innerHTML = `
         <a href="index.html">Catalogo</a>
         <a href="carrito.html">Carrito</a>
-        ${usuario.rol === 'ADMIN' ? '<a href="admin.html">Admin</a>' : `<span class="nav-user">${usuario.nombre}</span>`}
+        ${usuario.rol === 'ADMIN' ? '<a href="admin.html">Admin</a>' : `<span class="nav-user">${esc(usuario.nombre)}</span>`}
         <a href="#" id="btn-logout">Salir</a>
     `;
     document.getElementById('btn-logout').addEventListener('click', (e) => {
@@ -50,24 +56,33 @@ async function cargarCarrito() {
                 ${carrito.items.map(item => `
                     <div class="carrito-item">
                         <div class="carrito-item-info">
-                            <h3>${item.productoNombre}</h3>
+                            <h3>${esc(item.productoNombre)}</h3>
                             <p>Precio unitario: ${formatoPrecio(item.precioUnitario)}</p>
                         </div>
                         <div class="carrito-item-controles">
-                            <button class="btn-cantidad" onclick="cambiarCantidad('${item.productoId}', ${item.cantidad - 1})">-</button>
+                            <button class="btn-cantidad" data-action="cantidad" data-pid="${esc(item.productoId)}" data-nueva="${item.cantidad - 1}">-</button>
                             <span class="cantidad">${item.cantidad}</span>
-                            <button class="btn-cantidad" onclick="cambiarCantidad('${item.productoId}', ${item.cantidad + 1})">+</button>
+                            <button class="btn-cantidad" data-action="cantidad" data-pid="${esc(item.productoId)}" data-nueva="${item.cantidad + 1}">+</button>
                             <span class="item-subtotal">${formatoPrecio(item.subtotal)}</span>
-                            <button class="btn-eliminar" onclick="eliminarItem('${item.productoId}')">Eliminar</button>
+                            <button class="btn-eliminar" data-action="eliminar" data-pid="${esc(item.productoId)}">Eliminar</button>
                         </div>
                     </div>
                 `).join('')}
             </div>
             <div class="carrito-total">
                 <h3>Total: ${formatoPrecio(carrito.total)}</h3>
-                <button class="btn-primary btn-comprar" onclick="comprarCarrito()">Comprar Todo</button>
+                <button class="btn-primary btn-comprar" id="btn-comprar-todo">Comprar Todo</button>
             </div>
         `;
+
+        contenido.querySelectorAll('[data-action="cantidad"]').forEach(btn => {
+            btn.addEventListener('click', () => cambiarCantidad(btn.dataset.pid, Number(btn.dataset.nueva)));
+        });
+        contenido.querySelectorAll('[data-action="eliminar"]').forEach(btn => {
+            btn.addEventListener('click', () => eliminarItem(btn.dataset.pid));
+        });
+        document.getElementById('btn-comprar-todo').addEventListener('click', comprarCarrito);
+
     } catch (err) {
         contenido.innerHTML = '<p class="sin-productos">Error al cargar el carrito.</p>';
     }
@@ -85,7 +100,7 @@ async function cambiarCantidad(productoId, nuevaCantidad) {
         });
         cargarCarrito();
     } catch (err) {
-        alert('Error al actualizar cantidad');
+        console.error('Error al actualizar cantidad');
     }
 }
 
@@ -97,7 +112,7 @@ async function eliminarItem(productoId) {
         });
         cargarCarrito();
     } catch (err) {
-        alert('Error al eliminar producto');
+        console.error('Error al eliminar producto');
     }
 }
 

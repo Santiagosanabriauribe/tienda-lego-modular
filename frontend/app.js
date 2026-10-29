@@ -5,6 +5,12 @@ let productos = [];
 let categoriaActiva = 'todas';
 let cantidadesCarrito = {};
 
+function esc(str) {
+    const el = document.createElement('span');
+    el.textContent = str;
+    return el.innerHTML;
+}
+
 function getUsuario() {
     try { return JSON.parse(localStorage.getItem('usuario')); } catch { return null; }
 }
@@ -22,7 +28,7 @@ function renderNav() {
         nav.innerHTML = `
             <a href="index.html">Catalogo</a>
             <a href="carrito.html">Carrito</a>
-            ${usuario.rol === 'ADMIN' ? '<a href="admin.html">Admin</a>' : `<span class="nav-user">${usuario.nombre}</span>`}
+            ${usuario.rol === 'ADMIN' ? '<a href="admin.html">Admin</a>' : `<span class="nav-user">${esc(usuario.nombre)}</span>`}
             <a href="#" id="btn-logout">Salir</a>
         `;
         document.getElementById('btn-logout').addEventListener('click', (e) => {
@@ -79,7 +85,7 @@ function renderCategorias() {
     const container = document.getElementById('categorias-btns');
     let html = '<button class="cat-btn active" data-id="todas">Todas</button>';
     categorias.forEach(cat => {
-        html += `<button class="cat-btn" data-id="${cat.id}">${cat.nombre}</button>`;
+        html += `<button class="cat-btn" data-id="${esc(cat.id)}">${esc(cat.nombre)}</button>`;
     });
     container.innerHTML = html;
 
@@ -95,7 +101,7 @@ function renderCategorias() {
 
 function nombreCategoria(categoriaId) {
     const cat = categorias.find(c => c.id === categoriaId);
-    return cat ? cat.nombre : '';
+    return cat ? esc(cat.nombre) : '';
 }
 
 function renderProductos() {
@@ -111,15 +117,15 @@ function renderProductos() {
         const enCarrito = cantidadesCarrito[p.id] || 0;
         return `
         <div class="producto-card">
-            <div class="producto-card-img" onclick="abrirDetalle('${p.id}')">
+            <div class="producto-card-img" data-id="${esc(p.id)}">
                 <img src="${p.imagenUrl || 'https://placehold.co/400x300/fafafa/ccc?text=LEGO'}"
-                     alt="${p.nombre}"
+                     alt="${esc(p.nombre)}"
                      onerror="this.src='https://placehold.co/400x300/fafafa/ccc?text=LEGO'">
             </div>
             <div class="producto-info">
                 <span class="categoria-tag">${nombreCategoria(p.categoriaId)}</span>
-                <h3>${p.nombre}</h3>
-                ${p.numeroSet ? `<span class="set-number">Set #${p.numeroSet}</span>` : ''}
+                <h3>${esc(p.nombre)}</h3>
+                ${p.numeroSet ? `<span class="set-number">Set #${esc(p.numeroSet)}</span>` : ''}
                 <div class="precio-stock">
                     <span class="precio">${formatoPrecio(p.precio)}</span>
                     <span class="stock ${p.stock === 0 ? 'agotado' : ''}">
@@ -127,24 +133,45 @@ function renderProductos() {
                     </span>
                 </div>
                 ${usuario && p.stock > 0 ? `
-                    <div class="producto-acciones" id="acciones-${p.id}">
+                    <div class="producto-acciones" id="acciones-${esc(p.id)}">
                         ${enCarrito > 0
                             ? renderContador(p.id, enCarrito, p.stock)
-                            : `<button class="btn-agregar" onclick="agregarAlCarrito('${p.id}')">Agregar al carrito</button>`
+                            : `<button class="btn-agregar" data-action="agregar" data-pid="${esc(p.id)}">Agregar al carrito</button>`
                         }
-                        <button class="btn-comprar-ya" onclick="comprarDirecto('${p.id}')">Comprar</button>
+                        <button class="btn-comprar-ya" data-action="comprar" data-pid="${esc(p.id)}">Comprar</button>
                     </div>
                 ` : ''}
             </div>
         </div>`;
     }).join('');
+
+    grid.querySelectorAll('.producto-card-img[data-id]').forEach(el => {
+        el.addEventListener('click', () => abrirDetalle(el.dataset.id));
+    });
+
+    bindAcciones(grid);
+}
+
+function bindAcciones(container) {
+    container.querySelectorAll('[data-action="agregar"]').forEach(btn => {
+        btn.addEventListener('click', () => agregarAlCarrito(btn.dataset.pid));
+    });
+    container.querySelectorAll('[data-action="comprar"]').forEach(btn => {
+        btn.addEventListener('click', () => comprarDirecto(btn.dataset.pid));
+    });
+    container.querySelectorAll('[data-action="cnt-menos"]').forEach(btn => {
+        btn.addEventListener('click', () => cambiarCantidad(btn.dataset.pid, -1, Number(btn.dataset.stock)));
+    });
+    container.querySelectorAll('[data-action="cnt-mas"]').forEach(btn => {
+        btn.addEventListener('click', () => cambiarCantidad(btn.dataset.pid, 1, Number(btn.dataset.stock)));
+    });
 }
 
 function renderContador(productoId, cantidad, stock) {
     return `<div class="contador-carrito">
-        <button class="btn-cnt" onclick="cambiarCantidad('${productoId}', -1, ${stock})">-</button>
-        <span class="cnt-valor" id="cnt-${productoId}">${cantidad}</span>
-        <button class="btn-cnt" onclick="cambiarCantidad('${productoId}', 1, ${stock})" ${cantidad >= stock ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>+</button>
+        <button class="btn-cnt" data-action="cnt-menos" data-pid="${esc(productoId)}" data-stock="${stock}">-</button>
+        <span class="cnt-valor" id="cnt-${esc(productoId)}">${cantidad}</span>
+        <button class="btn-cnt" data-action="cnt-mas" data-pid="${esc(productoId)}" data-stock="${stock}" ${cantidad >= stock ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>+</button>
     </div>`;
 }
 
@@ -155,13 +182,14 @@ function actualizarBotonesProducto(productoId) {
     if (!p) return;
     const enCarrito = cantidadesCarrito[productoId] || 0;
 
-    const botonComprar = `<button class="btn-comprar-ya" onclick="comprarDirecto('${productoId}')">Comprar</button>`;
+    const botonComprar = `<button class="btn-comprar-ya" data-action="comprar" data-pid="${esc(productoId)}">Comprar</button>`;
 
     if (enCarrito > 0) {
         contenedor.innerHTML = renderContador(productoId, enCarrito, p.stock) + botonComprar;
     } else {
-        contenedor.innerHTML = `<button class="btn-agregar" onclick="agregarAlCarrito('${productoId}')">Agregar al carrito</button>` + botonComprar;
+        contenedor.innerHTML = `<button class="btn-agregar" data-action="agregar" data-pid="${esc(productoId)}">Agregar al carrito</button>` + botonComprar;
     }
+    bindAcciones(contenedor);
 }
 
 function formatoPrecio(precio) {
@@ -180,13 +208,13 @@ function abrirDetalle(id) {
     body.innerHTML = `
         <div class="modal-body-inner">
             <img src="${p.imagenUrl || 'https://placehold.co/600x400/fafafa/ccc?text=LEGO'}"
-                 alt="${p.nombre}"
+                 alt="${esc(p.nombre)}"
                  onerror="this.src='https://placehold.co/600x400/fafafa/ccc?text=LEGO'">
             <div class="detalle">
                 <span class="categoria-tag">${nombreCategoria(p.categoriaId)}</span>
-                <h2>${p.nombre}</h2>
-                ${p.numeroSet ? `<p class="set-number">Set #${p.numeroSet}</p>` : ''}
-                <p class="descripcion">${p.descripcion || 'Sin descripcion disponible.'}</p>
+                <h2>${esc(p.nombre)}</h2>
+                ${p.numeroSet ? `<p class="set-number">Set #${esc(p.numeroSet)}</p>` : ''}
+                <p class="descripcion">${esc(p.descripcion || 'Sin descripcion disponible.')}</p>
                 <div class="precio-stock">
                     <span class="precio">${formatoPrecio(p.precio)}</span>
                     <span class="stock ${p.stock === 0 ? 'agotado' : ''}">
@@ -194,27 +222,20 @@ function abrirDetalle(id) {
                     </span>
                 </div>
                 ${usuario && p.stock > 0 ? `
-                    <div class="producto-acciones" id="acciones-modal-${p.id}" style="margin-top:1rem">
+                    <div class="producto-acciones" id="acciones-modal-${esc(p.id)}" style="margin-top:1rem">
                         ${enCarrito > 0
-                            ? renderContadorModal(p.id, enCarrito, p.stock)
-                            : `<button class="btn-agregar" onclick="agregarAlCarrito('${p.id}')">Agregar al carrito</button>`
+                            ? renderContador(p.id, enCarrito, p.stock)
+                            : `<button class="btn-agregar" data-action="agregar" data-pid="${esc(p.id)}">Agregar al carrito</button>`
                         }
-                        <button class="btn-comprar-ya" onclick="comprarDirecto('${p.id}')">Comprar ahora</button>
+                        <button class="btn-comprar-ya" data-action="comprar" data-pid="${esc(p.id)}">Comprar ahora</button>
                     </div>
                 ` : ''}
             </div>
         </div>
     `;
 
+    bindAcciones(body);
     modal.classList.remove('hidden');
-}
-
-function renderContadorModal(productoId, cantidad, stock) {
-    return `<div class="contador-carrito">
-        <button class="btn-cnt" onclick="cambiarCantidad('${productoId}', -1, ${stock})">-</button>
-        <span class="cnt-valor" id="cnt-modal-${productoId}">${cantidad}</span>
-        <button class="btn-cnt" onclick="cambiarCantidad('${productoId}', 1, ${stock})" ${cantidad >= stock ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>+</button>
-    </div>`;
 }
 
 async function agregarAlCarrito(productoId) {
@@ -288,13 +309,14 @@ function actualizarBotonesModal(productoId) {
     if (!p) return;
     const enCarrito = cantidadesCarrito[productoId] || 0;
 
-    const botonComprar = `<button class="btn-comprar-ya" onclick="comprarDirecto('${productoId}')">Comprar ahora</button>`;
+    const botonComprar = `<button class="btn-comprar-ya" data-action="comprar" data-pid="${esc(productoId)}">Comprar ahora</button>`;
 
     if (enCarrito > 0) {
-        contenedor.innerHTML = renderContadorModal(productoId, enCarrito, p.stock) + botonComprar;
+        contenedor.innerHTML = renderContador(productoId, enCarrito, p.stock) + botonComprar;
     } else {
-        contenedor.innerHTML = `<button class="btn-agregar" onclick="agregarAlCarrito('${productoId}')">Agregar al carrito</button>` + botonComprar;
+        contenedor.innerHTML = `<button class="btn-agregar" data-action="agregar" data-pid="${esc(productoId)}">Agregar al carrito</button>` + botonComprar;
     }
+    bindAcciones(contenedor);
 }
 
 function comprarDirecto(productoId) {
