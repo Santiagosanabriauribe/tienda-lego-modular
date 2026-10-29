@@ -39,3 +39,4 @@ out/
 ### Secretos y certificados ###
 .env
 keystore.p12
+src/main/resources/application-local.properties
