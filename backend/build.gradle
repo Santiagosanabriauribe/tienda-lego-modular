@@ -41,5 +41,5 @@ tasks.named('test') {
 }
 
 bootRun {
-	environment 'MONGODB_PASSWORD', providers.environmentVariable('MONGODB_PASSWORD').getOrElse('')
+	jvmArgs = ['-Dspring.profiles.active=local']
 }

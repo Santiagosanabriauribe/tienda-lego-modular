@@ -73,6 +73,10 @@ public class PedidoService {
                                 String usuarioNombre, String metodoPago, String direccion,
                                 String ciudad, String departamento, String telefono,
                                 String destinatario) {
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor a cero");
+        }
+
         Producto producto = productoRepo.findById(productoId)
                 .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
 

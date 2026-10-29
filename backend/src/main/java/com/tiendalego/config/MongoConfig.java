@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
-    @Value("${MONGODB_URI:mongodb://localhost:27017/tienda_lego}")
+    @Value("${spring.data.mongodb.uri}")
     private String mongoUri;
 
     @Override

@@ -27,11 +27,14 @@ public class UsuarioService {
     @Bean
     CommandLineRunner crearAdminInicial() {
         return args -> {
-            if (!repo.existsByEmail("admin@tiendalego.com")) {
-                Usuario admin = new Usuario("Administrador", "admin@tiendalego.com",
-                        encoder.encode("admin1234"), "ADMIN");
-                repo.save(admin);
-            }
+            repo.findByEmail("admin@tiendalego.com").ifPresentOrElse(
+                    admin -> {
+                        admin.setPassword(encoder.encode("admin1234"));
+                        repo.save(admin);
+                    },
+                    () -> repo.save(new Usuario("Administrador", "admin@tiendalego.com",
+                            encoder.encode("admin1234"), "ADMIN"))
+            );
         };
     }
 

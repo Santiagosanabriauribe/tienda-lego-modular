@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/categorias/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/categorias/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/imagenes/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/carritos/**").permitAll()
                         .requestMatchers("/api/v1/pedidos").hasRole("ADMIN")
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().permitAll()
@@ -61,7 +62,7 @@ public class SecurityConfig {
                                 res.sendError(HttpStatus.UNAUTHORIZED.value(), "No autenticado")))
                 .headers(h -> h
                         .contentSecurityPolicy(c -> c.policyDirectives(
-                                "default-src 'self'; script-src 'self'; style-src 'self'; "
+                                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
                                         + "img-src 'self' data: https:; font-src 'self'; frame-ancestors 'none'"))
                         .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(300))
                         .frameOptions(f -> f.deny())

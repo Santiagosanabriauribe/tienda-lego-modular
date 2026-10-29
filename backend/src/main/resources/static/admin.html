@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Tienda LEGO</title>
+    <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <nav class="nav-links" id="nav-links"></nav>
+        </div>
+    </header>
+
+    <main>
+        <h2 style="margin-bottom:1rem">Panel de Administracion</h2>
+
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="categorias">Categorias</button>
+            <button class="admin-tab" data-tab="productos">Productos</button>
+            <button class="admin-tab" data-tab="pedidos">Pedidos</button>
+        </div>
+
+        <!-- CATEGORIAS -->
+        <div id="tab-categorias" class="admin-panel">
+            <h3>Gestionar Categorias</h3>
+            <form id="form-categoria" class="admin-form">
+                <input type="hidden" id="cat-id">
+                <input type="text" id="cat-nombre" placeholder="Nombre de la categoria" required>
+                <input type="text" id="cat-descripcion" placeholder="Descripcion">
+                <button type="submit" class="btn-primary">Guardar</button>
+                <button type="button" class="btn-secondary" id="cat-cancelar" style="display:none" onclick="cancelarCategoria()">Cancelar</button>
+            </form>
+            <div id="lista-categorias"></div>
+        </div>
+
+        <!-- PRODUCTOS -->
+        <div id="tab-productos" class="admin-panel hidden">
+            <h3>Gestionar Productos</h3>
+            <form id="form-producto" class="admin-form">
+                <input type="hidden" id="prod-id">
+                <input type="text" id="prod-nombre" placeholder="Nombre del producto" required>
+                <input type="text" id="prod-numeroSet" placeholder="Numero de set">
+                <textarea id="prod-descripcion" placeholder="Descripcion"></textarea>
+                <input type="number" id="prod-precio" placeholder="Precio" step="0.01" min="0" required>
+                <input type="number" id="prod-stock" placeholder="Stock" min="0" required>
+                <div class="imagen-upload-group">
+                    <input type="file" id="prod-archivo" accept="image/*">
+                    <input type="hidden" id="prod-imagenUrl">
+                    <span id="prod-imagen-estado"></span>
+                </div>
+                <select id="prod-categoriaId" required>
+                    <option value="">Seleccionar categoria</option>
+                </select>
+                <button type="submit" class="btn-primary">Guardar</button>
+                <button type="button" class="btn-secondary" id="prod-cancelar" style="display:none" onclick="cancelarProducto()">Cancelar</button>
+            </form>
+            <div id="lista-productos"></div>
+        </div>
+
+        <!-- PEDIDOS -->
+        <div id="tab-pedidos" class="admin-panel hidden">
+            <h3>Todos los Pedidos</h3>
+            <div id="lista-pedidos"></div>
+        </div>
+    </main>
+
+
+    <script src="csrf.js"></script>
+    <script src="admin.js?v=3"></script>
+</body>
+</html>

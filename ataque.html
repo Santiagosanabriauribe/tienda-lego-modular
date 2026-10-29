@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pagina Maliciosa - Prueba CSRF</title>
+</head>
+<body>
+    <h1>Sitio Falso - Prueba de ataque CSRF</h1>
+    <p>Esta pagina simula un sitio externo que intenta hacer un POST
+       al servidor de la tienda LEGO sin el token CSRF.</p>
+
+    <form action="https://localhost:8443/api/v1/carritos" method="POST">
+        <input name="nombre" value="producto-del-atacante">
+    </form>
+    <script>document.forms[0].submit()</script>
+
+    <hr>
+    <h2>Resultado esperado</h2>
+    <p>El servidor debe responder <strong>403 Forbidden</strong> porque:</p>
+    <ul>
+        <li>La peticion no incluye la cabecera <code>X-XSRF-TOKEN</code></li>
+        <li>Aunque el navegador envie la cookie de sesion, SameSite=Strict
+            impide que se envie desde otro origen</li>
+        <li>CORS solo permite <code>https://localhost:8443</code></li>
+    </ul>
+</body>
+</html>

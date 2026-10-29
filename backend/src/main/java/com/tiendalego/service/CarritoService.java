@@ -29,6 +29,9 @@ public class CarritoService {
     }
 
     public Optional<Carrito> agregarItem(String carritoId, String productoId, int cantidad) {
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor a cero");
+        }
         return carritoRepo.findById(carritoId).map(carrito -> {
             Producto producto = productoRepo.findById(productoId)
                     .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + productoId));

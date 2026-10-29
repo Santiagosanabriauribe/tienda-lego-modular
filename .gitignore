@@ -13,8 +13,9 @@ build/
 .DS_Store
 Thumbs.db
 
-# Env
+# Env / secretos
 .env
+application-local.properties
 *.log
 
 # Docker data

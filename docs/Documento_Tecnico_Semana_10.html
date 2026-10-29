@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Documento Técnico - Tienda en Línea Modular de LEGO</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    line-height: 1.7;
+    color: #222;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 40px 32px 60px;
+    background: #fff;
+  }
+  h1 { color: #1a5276; font-size: 1.9rem; margin-bottom: 6px; text-align: center; }
+  h2 { color: #1a5276; font-size: 1.45rem; margin-top: 36px; margin-bottom: 12px;
+       border-bottom: 2px solid #1a5276; padding-bottom: 4px; }
+  h3 { color: #2c3e50; font-size: 1.15rem; margin-top: 22px; margin-bottom: 8px; }
+  h4 { color: #34495e; font-size: 1rem; margin-top: 16px; margin-bottom: 6px; font-weight: 600; }
+  p { margin-bottom: 12px; text-align: justify; }
+  ul, ol { margin-left: 24px; margin-bottom: 12px; }
+  li { margin-bottom: 4px; }
+  .portada { text-align: center; margin-bottom: 60px; padding-top: 120px; }
+  .portada h1 { font-size: 2.2rem; margin-bottom: 16px; }
+  .portada .subtitulo { font-size: 1.1rem; color: #555; margin-bottom: 8px; }
+  .portada .año { font-size: 1.3rem; color: #1a5276; font-weight: 700; margin-top: 40px; }
+  .pie { text-align: center; color: #888; font-size: 0.85rem; margin-top: 8px;
+         border-top: 1px solid #ddd; padding-top: 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 0.95rem; }
+  th { background: #a8d0e6; color: #1a2d3d; text-align: left; padding: 8px 10px;
+       border: 1px solid #bbb; font-weight: 600; }
+  td { padding: 7px 10px; border: 1px solid #ccc; vertical-align: top; }
+  tr:nth-child(even) td { background: #f5f9fc; }
+  code { background: #eef3f8; padding: 2px 5px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: #f4f6f9; border: 1px solid #ddd; border-radius: 4px;
+        padding: 14px 16px; overflow-x: auto; font-size: 0.88rem; margin: 12px 0; line-height: 1.5; }
+  .pendiente { background: #fff3cd; border-left: 4px solid #d4a017; padding: 10px 14px;
+               margin: 14px 0; border-radius: 3px; font-size: 0.93rem; }
+  .pendiente strong { color: #856404; }
+  .nota { background: #e8f4fd; border-left: 4px solid #1a5276; padding: 10px 14px;
+          margin: 14px 0; border-radius: 3px; font-size: 0.93rem; }
+  @media print {
+    body { padding: 20px; font-size: 11pt; }
+    .page-break { page-break-before: always; }
+    .pendiente { border: 1px solid #d4a017; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="portada">
+  <h1>DOCUMENTO TÉCNICO</h1>
+  <p style="font-weight:700; font-size:1.15rem; text-align:center;">PROYECTO DE AULA</p>
+  <h1 style="font-size:1.7rem; margin-top:24px;">Tienda en Línea Modular especializada en LEGO</h1>
+  <p class="subtitulo">Primer entregable - Semana 10</p>
+  <p class="subtitulo">Etapa de definición, planeación y arquitectura</p>
+  <p class="subtitulo">Arquitectura desacoplada: Backend REST API + Frontend independiente</p>
+  <p class="subtitulo">Proyecto académico - Ingeniería de Sistemas</p>
+  <p class="año">2026</p>
+</div>
+
+<div class="pie">Documento Técnico - Tienda en Línea Modular de LEGO</div>
+
+<!-- INTRODUCCIÓN -->
+<div class="page-break"></div>
+<h2>Introducción</h2>
+
+<p>El presente documento corresponde a la etapa de definición, planeación y diseño arquitectónico de una tienda en línea modular especializada en sets y coleccionables de LEGO. En esta fase se establecen el problema que se busca resolver, los objetivos del proyecto, su alcance, los requerimientos funcionales y no funcionales, el modelo conceptual de datos, la arquitectura general y la metodología de trabajo que orientará el desarrollo durante las semanas posteriores.</p>
+
+<p>La propuesta parte de una arquitectura desacoplada en la cual el frontend y el backend serán desarrollados como aplicaciones independientes. Toda comunicación entre ambos componentes se realizará mediante una API REST, evitando que el backend genere o renderice directamente las vistas de la aplicación. Este enfoque responde a los lineamientos del proyecto académico, que exigen una separación real entre frontend y backend.</p>
+
+<p>En cumplimiento de las condiciones de la Semana 10, este documento se limita a la planeación y definición del sistema. Por tanto, no se incluye implementación ni código fuente correspondiente a la aplicación final.</p>
+
+<!-- 1. PLANTEAMIENTO DEL PROBLEMA -->
+<h2>1. Planteamiento del problema</h2>
+
+<p>Los pequeños y medianos negocios dedicados a la comercialización de sets, figuras y artículos coleccionables de LEGO pueden comenzar sus actividades utilizando redes sociales, aplicaciones de mensajería instantánea o publicaciones independientes como principal mecanismo de venta. Aunque este modelo resulta suficiente para iniciar operaciones, presenta dificultades a medida que aumenta la cantidad de productos, categorías y clientes.</p>
+
+<p>Uno de los principales problemas corresponde a la ausencia de un catálogo centralizado y organizado. Los productos LEGO pertenecen a distintas líneas y temáticas, como LEGO Star Wars, LEGO Technic, LEGO Marvel, LEGO City, LEGO Icons y LEGO Speed Champions. Cuando los productos son publicados únicamente mediante fotografías o publicaciones individuales en redes sociales, los clientes deben revisar gran cantidad de contenido para encontrar un producto específico y el negocio no dispone de una estructura adecuada para mantener la información organizada.</p>
+
+<p>Esta problemática adquiere especial importancia en una tienda de LEGO porque determinados productos pueden tener existencias reducidas. Algunos sets descontinuados, minifiguras, ediciones especiales o coleccionables pueden disponer de pocas unidades, por lo que es necesario mantener actualizado el inventario para evitar ofrecer artículos agotados o generar pedidos por cantidades superiores a las disponibles.</p>
+
+<p>Otro inconveniente se encuentra en el proceso manual de compra. Cuando las ventas se coordinan mediante mensajes privados, el cliente debe indicar individualmente cada artículo que desea comprar y el vendedor debe calcular manualmente cantidades, precios y valor total. Además de generar trabajo adicional, este mecanismo aumenta la posibilidad de errores y dificulta ofrecer una experiencia de compra consistente.</p>
+
+<p>También existe una problemática administrativa. Las modificaciones de productos, precios, categorías y existencias deben realizarse manualmente en diferentes publicaciones o canales. La información puede quedar desactualizada o ser inconsistente entre distintos medios de comunicación.</p>
+
+<p>Por esta razón se propone desarrollar una tienda en línea modular especializada en LEGO, que permita centralizar la administración del catálogo, organizar los productos mediante categorías o temáticas, gestionar sus existencias, permitir que los visitantes consulten y filtren los productos y proporcionar un carrito de compras que calcule automáticamente los valores asociados a una compra.</p>
+
+<p>La aplicación será construida mediante una arquitectura cliente-servidor desacoplada, con un backend encargado de gestionar los datos y las reglas del negocio y un frontend independiente encargado de proporcionar la interfaz utilizada por los clientes y administradores.</p>
+
+<!-- 2. OBJETIVOS -->
+<h2>2. Objetivos</h2>
+
+<h3>2.1 Objetivo general</h3>
+<p>Diseñar, construir y desplegar una plataforma web de comercio electrónico especializada en sets y coleccionables de LEGO mediante una arquitectura desacoplada, conformada por un backend basado en una API REST y un frontend independiente que consuma sus servicios, permitiendo administrar productos y categorías, consultar un catálogo público, gestionar un carrito de compras y aplicar mecanismos adecuados de seguridad, documentación y despliegue.</p>
+
+<h3>2.2 Objetivos específicos</h3>
+<ol>
+  <li>Diseñar e implementar un backend basado en servicios REST que permita administrar la información relacionada con categorías, productos LEGO, existencias y operaciones del carrito, manteniendo una separación clara entre lógica de negocio, acceso a datos y exposición de servicios.</li>
+  <li>Desarrollar un frontend independiente y dinámico que consuma la API REST del backend y permita a los visitantes navegar por el catálogo de LEGO, consultar productos por categoría y administrar los elementos agregados a su carrito sin depender de vistas generadas desde el servidor.</li>
+  <li>Implementar un módulo administrativo que permita gestionar mediante una interfaz gráfica las categorías y productos disponibles, incluyendo operaciones de creación, consulta, actualización y eliminación.</li>
+  <li>Aplicar mecanismos de seguridad web mediante el uso de HTTPS, prácticas de mitigación de ataques XSS y mecanismos de protección frente a solicitudes CSRF en aquellas operaciones que modifiquen información.</li>
+  <li>Documentar la API mediante OpenAPI/Swagger, facilitando que desarrolladores o terceros puedan conocer, comprender y probar los servicios disponibles sin necesidad de consultar directamente el código fuente.</li>
+  <li>Preparar y desplegar la aplicación en un entorno accesible, de forma que la solución completa pueda utilizarse desde equipos diferentes a los computadores de desarrollo de los integrantes del proyecto.</li>
+</ol>
+
+<!-- 3. ALCANCE -->
+<div class="page-break"></div>
+<h2>3. Alcance del proyecto</h2>
+
+<h3>3.1 Funcionalidades incluidas</h3>
+<p>La primera versión de la Tienda en Línea Modular de LEGO comprenderá las funcionalidades necesarias para proporcionar una experiencia básica pero funcional de comercio electrónico.</p>
+
+<p>El sistema incluirá un catálogo público de productos LEGO, donde cada producto estará asociado a una categoría o temática. Se contemplarán categorías como LEGO Star Wars, Technic, Marvel, City, Icons y Speed Champions, aunque el administrador podrá crear nuevas categorías según las necesidades de la tienda.</p>
+
+<p>Cada producto podrá contener información básica como nombre, descripción, precio, cantidad disponible, número o referencia del set e imagen asociada.</p>
+
+<ul>
+  <li>Gestión de categorías LEGO mediante operaciones de creación, consulta, actualización y eliminación.</li>
+  <li>Gestión de productos o sets LEGO mediante operaciones CRUD.</li>
+  <li>Asociación de cada producto con una categoría determinada.</li>
+  <li>Catálogo público navegable y filtrado de productos según categoría.</li>
+  <li>Visualización de información detallada de cada producto.</li>
+  <li>Carrito de compras con adición, eliminación y modificación de cantidades.</li>
+  <li>Cálculo automático del subtotal y total del carrito.</li>
+  <li>Validación básica de disponibilidad de unidades.</li>
+  <li>Panel administrativo para productos y categorías.</li>
+  <li>Documentación de servicios mediante Swagger/OpenAPI.</li>
+  <li>Separación completa entre frontend y backend con intercambio de información en JSON.</li>
+  <li>Controles relacionados con HTTPS, XSS y CSRF.</li>
+  <li>Uso de CSS3 para los estilos del frontend, con migración a SCSS prevista para la Semana 14.</li>
+  <li>Despliegue final en un entorno accesible.</li>
+</ul>
+
+<h3>3.2 Funcionalidades fuera del alcance</h3>
+<p>Con el objetivo de mantener un alcance viable dentro del periodo académico, la primera versión no incluirá las siguientes capacidades:</p>
+<ul>
+  <li>Integración con una pasarela bancaria real o cobros reales mediante tarjetas débito o crédito.</li>
+  <li>Integración directa con PayPal, Stripe, Mercado Pago u otras plataformas financieras.</li>
+  <li>Procesamiento contable o generación de facturación electrónica ante entidades tributarias.</li>
+  <li>Integración automática con empresas transportadoras.</li>
+  <li>Rastreo GPS o satelital de pedidos.</li>
+  <li>Aplicación móvil nativa para Android o iOS.</li>
+  <li>Marketplace que permita registrar vendedores externos.</li>
+  <li>Sistema avanzado de recomendaciones mediante inteligencia artificial.</li>
+  <li>Integración automática con el catálogo oficial de LEGO.</li>
+  <li>Sincronización automática con tiendas físicas.</li>
+  <li>Programa avanzado de puntos o fidelización.</li>
+  <li>Procesamiento de devoluciones bancarias.</li>
+  <li>Sistema de subastas para coleccionables.</li>
+</ul>
+
+<p>Estas características pueden considerarse como posibles extensiones futuras, pero no forman parte del alcance del proyecto académico actual.</p>
+
+<!-- 4. REQUERIMIENTOS -->
+<div class="page-break"></div>
+<h2>4. Requerimientos del sistema</h2>
+
+<h3>4.1 Requerimientos funcionales</h3>
+
+<h4>RF-01. Gestión de categorías LEGO</h4>
+<p>El sistema deberá permitir al administrador crear, consultar, modificar y eliminar categorías utilizadas para organizar los productos de la tienda.</p>
+<p>Cada categoría deberá disponer como mínimo de un identificador único, nombre y descripción. Entre los ejemplos de categorías se encuentran Star Wars, Technic, Marvel, City, Icons y Speed Champions.</p>
+
+<h4>RF-02. Gestión de productos o sets LEGO</h4>
+<p>El sistema deberá permitir al administrador registrar, consultar, actualizar y eliminar productos LEGO.</p>
+<ul>
+  <li>Identificador.</li>
+  <li>Nombre.</li>
+  <li>Número o referencia del set.</li>
+  <li>Descripción.</li>
+  <li>Precio.</li>
+  <li>Stock disponible.</li>
+  <li>Imagen.</li>
+  <li>Categoría.</li>
+</ul>
+<p>Las operaciones realizadas deberán mantenerse sincronizadas entre la interfaz administrativa y la información almacenada en el sistema.</p>
+
+<h4>RF-03. Asociación entre productos y categorías</h4>
+<p>Cada producto deberá estar asociado a una categoría LEGO existente. Una categoría podrá contener múltiples productos, mientras que cada producto pertenecerá a una categoría principal.</p>
+
+<h4>RF-04. Visualización del catálogo público</h4>
+<p>El sistema deberá proporcionar una vista pública del catálogo sin exigir acceso al panel administrativo. El catálogo deberá mostrar información básica de los productos, como imagen, nombre, categoría, precio y disponibilidad.</p>
+
+<h4>RF-05. Filtrado de productos por categoría</h4>
+<p>El visitante deberá poder seleccionar una categoría y visualizar exclusivamente los productos pertenecientes a ella.</p>
+
+<h4>RF-06. Consulta del detalle de producto</h4>
+<p>El sistema deberá permitir consultar la información individual de un producto. La vista deberá presentar como mínimo el nombre, referencia del set, categoría, descripción, precio, imagen y unidades disponibles.</p>
+
+<h4>RF-07. Gestión del carrito de compras</h4>
+<p>El cliente deberá poder agregar productos disponibles al carrito. El carrito deberá permitir almacenar simultáneamente distintos productos.</p>
+<ul>
+  <li>Producto.</li>
+  <li>Cantidad.</li>
+  <li>Precio unitario.</li>
+  <li>Subtotal.</li>
+</ul>
+
+<h4>RF-08. Actualización del carrito</h4>
+<p>El usuario deberá poder modificar la cantidad de unidades de un producto previamente agregado y eliminar productos que ya no desee comprar. El sistema deberá actualizar automáticamente el valor total después de cualquiera de estas operaciones.</p>
+
+<h4>RF-09. Validación de disponibilidad</h4>
+<p>Antes de aceptar una cantidad determinada dentro del carrito, el sistema deberá comprobar que la cantidad solicitada no exceda las unidades disponibles del producto. Cuando un producto no tenga unidades disponibles deberá identificarse como agotado y no deberá permitir aumentar su cantidad dentro del carrito.</p>
+
+<h4>RF-10. Panel administrativo</h4>
+<p>El sistema deberá disponer de un panel de administración desde el cual una persona autorizada pueda gestionar categorías y productos mediante interfaces gráficas. Las operaciones deberán realizarse sin necesidad de utilizar herramientas técnicas externas como Postman o modificar directamente el código.</p>
+
+<h4>RF-11. Exposición de servicios REST</h4>
+<p>El backend deberá proporcionar los recursos necesarios mediante endpoints REST para permitir que el frontend consulte y modifique los datos correspondientes. El backend no deberá generar las vistas del frontend.</p>
+
+<h4>RF-12. Documentación de la API</h4>
+<p>Los endpoints disponibles deberán documentarse mediante OpenAPI/Swagger. La documentación deberá permitir identificar recursos, métodos HTTP, parámetros, cuerpos de las solicitudes y posibles respuestas. Un tercero deberá poder comprender y probar los servicios sin inspeccionar el código fuente.</p>
+
+<!-- 4.2 RNF -->
+<h3>4.2 Requerimientos no funcionales</h3>
+
+<h4>RNF-01. Arquitectura desacoplada</h4>
+<p>El sistema deberá estar compuesto por dos aplicaciones independientes: un frontend responsable de la interfaz de usuario y experiencia de navegación, y un backend responsable de la lógica del negocio, persistencia de datos y exposición de servicios REST. Toda comunicación entre ambos deberá realizarse mediante peticiones HTTP a la API.</p>
+
+<h4>RNF-02. Formato de intercambio de datos</h4>
+<p>La información intercambiada entre frontend y backend deberá utilizar principalmente el formato JSON, facilitando la interoperabilidad entre ambas aplicaciones.</p>
+
+<h4>RNF-03. Seguridad</h4>
+<p>La solución deberá incorporar mecanismos para disminuir riesgos asociados con vulnerabilidades comunes de aplicaciones web.</p>
+<ul>
+  <li>HTTPS para proteger la información durante su transmisión.</li>
+  <li>Mitigación de ataques Cross-Site Scripting (XSS).</li>
+  <li>Protección frente a Cross-Site Request Forgery (CSRF) en operaciones que modifiquen información.</li>
+</ul>
+
+<h4>RNF-04. Documentación</h4>
+<p>La API REST deberá contar con documentación OpenAPI/Swagger actualizada de acuerdo con los servicios implementados, indicando métodos HTTP, parámetros, recursos, respuestas y estructuras principales utilizadas.</p>
+
+<h4>RNF-05. Usabilidad</h4>
+<p>La interfaz deberá diseñarse de manera que las funciones principales puedan ser utilizadas por personas que no posean conocimientos técnicos. La navegación entre catálogo, categorías, carrito y panel administrativo deberá ser clara y consistente.</p>
+
+<h4>RNF-06. Rendimiento</h4>
+<p>En condiciones normales de uso académico, las operaciones habituales de consulta del catálogo y actualización del carrito deberán responder de manera suficientemente rápida para no afectar la experiencia del usuario. La aplicación deberá evitar solicitudes innecesarias y transferencias excesivas de información.</p>
+
+<h4>RNF-07. Estilos mediante SCSS</h4>
+<p>La capa visual del frontend utilizará inicialmente CSS3 plano. Se prevé la migración a SCSS como preprocesador CSS en la Semana 14, conforme al cronograma del proyecto.</p>
+
+<h4>RNF-08. Mantenibilidad</h4>
+<p>La solución deberá organizarse mediante componentes y responsabilidades claramente separadas, de modo que futuras funcionalidades puedan incorporarse sin modificar innecesariamente módulos no relacionados.</p>
+
+<h4>RNF-09. Compatibilidad</h4>
+<p>El frontend deberá poder utilizarse desde navegadores web modernos y adaptarse correctamente a diferentes dimensiones de pantalla.</p>
+
+<h4>RNF-10. Disponibilidad para sustentación</h4>
+<p>La aplicación final deberá encontrarse desplegada o ejecutándose desde un entorno accesible externamente, de manera que los usuarios no dependan del computador particular de uno de los integrantes del equipo.</p>
+
+<!-- 5. MODELO DE DATOS -->
+<div class="page-break"></div>
+<h2>5. Modelo de datos</h2>
+
+<p>Para la primera versión del proyecto se proponen cuatro entidades conceptuales principales: Categoria, encargada de clasificar los productos; Producto, que representa un set o coleccionable LEGO disponible en el catálogo; Carrito, encargado de agrupar temporalmente los productos seleccionados; e ItemCarrito, entidad embebida que representa un producto específico y su cantidad dentro de un carrito.</p>
+
+<div class="nota">
+  <strong>Nota sobre la tecnología de persistencia:</strong> El proyecto utiliza MongoDB (base de datos documental NoSQL) en lugar de una base de datos relacional. Los identificadores son cadenas de texto generadas automáticamente por MongoDB (ObjectId), no números secuenciales. ItemCarrito se almacena como un subdocumento embebido dentro de cada documento Carrito, no como una colección independiente.
+</div>
+
+<h3>5.1 Entidad Categoria</h3>
+<table>
+  <tr><th>Atributo</th><th>Tipo</th><th>Descripción</th></tr>
+  <tr><td>id</td><td>String</td><td>Identificador único (ObjectId de MongoDB)</td></tr>
+  <tr><td>nombre</td><td>String</td><td>Nombre de la categoría (obligatorio)</td></tr>
+  <tr><td>descripcion</td><td>String</td><td>Descripción de la categoría</td></tr>
+  <tr><td>activa</td><td>Boolean</td><td>Estado de disponibilidad (por defecto: true)</td></tr>
+</table>
+<p>Una categoría puede contener múltiples productos. Relación: Categoria 1:N Producto.</p>
+
+<h3>5.2 Entidad Producto</h3>
+<table>
+  <tr><th>Atributo</th><th>Tipo</th><th>Validación</th><th>Descripción</th></tr>
+  <tr><td>id</td><td>String</td><td>—</td><td>Identificador único (ObjectId de MongoDB)</td></tr>
+  <tr><td>nombre</td><td>String</td><td>Obligatorio</td><td>Nombre comercial</td></tr>
+  <tr><td>numeroSet</td><td>String</td><td>—</td><td>Número oficial o referencia del set</td></tr>
+  <tr><td>descripcion</td><td>String</td><td>—</td><td>Descripción del producto</td></tr>
+  <tr><td>precio</td><td>BigDecimal</td><td>Obligatorio, positivo</td><td>Precio unitario</td></tr>
+  <tr><td>stock</td><td>Integer</td><td>Obligatorio, &ge; 0</td><td>Cantidad disponible</td></tr>
+  <tr><td>imagenUrl</td><td>String</td><td>—</td><td>Ruta o URL de la imagen</td></tr>
+  <tr><td>activo</td><td>Boolean</td><td>—</td><td>Disponibilidad en catálogo (por defecto: true)</td></tr>
+  <tr><td>categoriaId</td><td>String</td><td>Obligatorio</td><td>Referencia al identificador de la categoría asociada</td></tr>
+</table>
+<p>Cada producto pertenece a una categoría principal. La relación se establece almacenando el identificador de la categoría (<code>categoriaId</code>) como referencia dentro del documento del producto.</p>
+
+<h3>5.3 Entidad Carrito</h3>
+<table>
+  <tr><th>Atributo</th><th>Tipo</th><th>Descripción</th></tr>
+  <tr><td>id</td><td>String</td><td>Identificador único (ObjectId de MongoDB)</td></tr>
+  <tr><td>fechaCreacion</td><td>LocalDateTime</td><td>Fecha y hora de creación (automática)</td></tr>
+  <tr><td>estado</td><td>String</td><td>Estado actual (por defecto: "ACTIVO")</td></tr>
+  <tr><td>total</td><td>BigDecimal</td><td>Valor total calculado del carrito</td></tr>
+  <tr><td>items</td><td>List&lt;ItemCarrito&gt;</td><td>Lista de ítems embebidos en el carrito</td></tr>
+</table>
+<p>Un carrito contiene múltiples ítems como subdocumentos embebidos. El total se recalcula automáticamente al agregar, modificar o eliminar ítems.</p>
+
+<h3>5.4 Entidad ItemCarrito (embebida)</h3>
+<table>
+  <tr><th>Atributo</th><th>Tipo</th><th>Descripción</th></tr>
+  <tr><td>productoId</td><td>String</td><td>Referencia al identificador del producto</td></tr>
+  <tr><td>productoNombre</td><td>String</td><td>Nombre del producto (desnormalizado para visualización)</td></tr>
+  <tr><td>cantidad</td><td>int</td><td>Unidades seleccionadas</td></tr>
+  <tr><td>precioUnitario</td><td>BigDecimal</td><td>Precio del producto al momento de agregar</td></tr>
+  <tr><td>subtotal</td><td>BigDecimal</td><td>Precio unitario multiplicado por cantidad</td></tr>
+</table>
+<p>ItemCarrito no es una colección independiente en la base de datos. Se almacena como un arreglo de subdocumentos dentro de cada documento Carrito. Esto sigue el patrón de diseño de documentos embebidos propio de MongoDB, donde los datos que se acceden juntos se almacenan juntos.</p>
+
+<h3>5.5 Relaciones entre entidades</h3>
+<ul>
+  <li><strong>Categoria &rarr; Producto (1 a muchos):</strong> Una categoría puede tener muchos productos. Cada producto almacena el <code>categoriaId</code> de su categoría.</li>
+  <li><strong>Carrito &rarr; ItemCarrito (1 a muchos, embebido):</strong> Un carrito contiene una lista de ítems dentro del mismo documento. Los ítems no existen de forma independiente fuera del carrito.</li>
+  <li><strong>Producto &rarr; ItemCarrito (referencia):</strong> Cada ítem del carrito referencia a un producto mediante su <code>productoId</code>.</li>
+</ul>
+
+<!-- 6. ARQUITECTURA -->
+<div class="page-break"></div>
+<h2>6. Arquitectura general del sistema</h2>
+
+<h3>6.1 Arquitectura cliente-servidor desacoplada</h3>
+<p>La aplicación utilizará una arquitectura cliente-servidor desacoplada. Esto significa que el frontend y el backend funcionarán como proyectos diferentes y podrán evolucionar de forma relativamente independiente.</p>
+<p>El flujo general de información será: Usuario &rarr; Frontend &rarr; API REST &rarr; Backend &rarr; Base de datos. La respuesta seguirá el recorrido inverso: Base de datos &rarr; Backend &rarr; Respuesta JSON &rarr; Frontend &rarr; Usuario.</p>
+
+<h3>6.2 Pila tecnológica</h3>
+<table>
+  <tr><th>Componente</th><th>Tecnología</th><th>Versión</th></tr>
+  <tr><td>Lenguaje backend</td><td>Java (LTS)</td><td>21</td></tr>
+  <tr><td>Framework backend</td><td>Spring Boot</td><td>4.0.2</td></tr>
+  <tr><td>Sistema de build</td><td>Gradle</td><td>9.7.1</td></tr>
+  <tr><td>Base de datos principal</td><td>MongoDB Atlas (nube)</td><td>8</td></tr>
+  <tr><td>Base de datos local (respaldo)</td><td>MongoDB en Docker</td><td>8</td></tr>
+  <tr><td>Acceso a datos</td><td>Spring Data MongoDB</td><td>(gestionado por Spring Boot)</td></tr>
+  <tr><td>Documentación API</td><td>springdoc-openapi (Swagger UI)</td><td>2.8.6</td></tr>
+  <tr><td>Validación</td><td>Jakarta Bean Validation</td><td>(gestionado por Spring Boot)</td></tr>
+  <tr><td>Frontend</td><td>HTML5 + CSS3 + JavaScript ES2022</td><td>—</td></tr>
+  <tr><td>Contenedores</td><td>Docker / Docker Compose</td><td>—</td></tr>
+  <tr><td>Control de versiones</td><td>Git + GitHub</td><td>—</td></tr>
+</table>
+
+<h3>6.3 Frontend</h3>
+<p>El frontend constituye la capa visible para el usuario. Sus principales responsabilidades serán:</p>
+<ul>
+  <li>Mostrar el catálogo y las categorías.</li>
+  <li>Permitir el filtrado y mostrar información detallada de los productos.</li>
+  <li>Administrar visualmente el carrito.</li>
+  <li>Presentar el panel administrativo.</li>
+  <li>Capturar información introducida por el usuario.</li>
+  <li>Validar aspectos básicos de formularios.</li>
+  <li>Realizar solicitudes HTTP hacia el backend.</li>
+  <li>Interpretar las respuestas recibidas y actualizar dinámicamente la interfaz.</li>
+</ul>
+<p>El frontend no accederá directamente a la base de datos. Todas las operaciones relacionadas con información persistente deberán realizarse a través de la API REST. Se implementa como archivos estáticos (HTML, CSS, JS) servidos de forma independiente al backend.</p>
+
+<h3>6.4 Backend</h3>
+<p>El backend constituye el componente encargado de administrar la lógica del sistema. Está construido con Spring Boot 4.0.2 sobre Java 21. Sus principales responsabilidades serán:</p>
+<ul>
+  <li>Exponer endpoints REST bajo el prefijo <code>/api/v1/</code>.</li>
+  <li>Recibir y validar solicitudes mediante Jakarta Bean Validation.</li>
+  <li>Aplicar reglas de negocio (validación de stock, existencia de categorías, cálculo de totales).</li>
+  <li>Consultar y modificar información en MongoDB mediante Spring Data MongoDB (MongoRepository).</li>
+  <li>Controlar disponibilidad de productos.</li>
+  <li>Aplicar controles de seguridad (CORS configurado para orígenes permitidos).</li>
+  <li>Interactuar con la capa de persistencia.</li>
+  <li>Generar respuestas estructuradas en JSON.</li>
+  <li>Proporcionar documentación OpenAPI/Swagger.</li>
+</ul>
+<p>El backend no será responsable de generar páginas HTML correspondientes al frontend.</p>
+
+<h3>6.5 Base de datos</h3>
+<p>El proyecto utiliza MongoDB 8 como motor de base de datos. MongoDB es una base de datos documental NoSQL que almacena la información en documentos JSON (BSON internamente). Se eligió por su flexibilidad para modelar datos de productos con atributos variables y por su integración nativa con Spring Data MongoDB.</p>
+
+<p><strong>Entorno principal:</strong> MongoDB Atlas (servicio gestionado en la nube de AWS, región US East 1), con un clúster de 3 nodos en réplica. La conexión se establece mediante una URI cifrada con TLS (<code>mongodb+srv://</code>), pasada como variable de entorno (<code>MONGODB_URI</code>) para no exponer credenciales en el código fuente.</p>
+
+<p><strong>Entorno de respaldo local:</strong> Un contenedor Docker con MongoDB 8, definido en <code>docker-compose.yml</code>, para desarrollo sin conexión a internet. Si no se proporciona la variable <code>MONGODB_URI</code>, la aplicación cae automáticamente al MongoDB local en <code>localhost:27017</code>.</p>
+
+<h3>6.6 API REST</h3>
+<p>La API REST funcionará como contrato de comunicación entre ambas aplicaciones. Las operaciones utilizarán métodos HTTP de acuerdo con su propósito: GET para consulta de información; POST para creación de nuevos recursos; PUT para actualización; y DELETE para eliminación.</p>
+
+<p>Los endpoints están organizados bajo el prefijo <code>/api/v1/</code>:</p>
+<table>
+  <tr><th>Recurso</th><th>Ruta base</th><th>Operaciones</th></tr>
+  <tr><td>Categorías</td><td><code>/api/v1/categorias</code></td><td>GET, POST, PUT, DELETE</td></tr>
+  <tr><td>Productos</td><td><code>/api/v1/productos</code></td><td>GET, POST, PUT, DELETE (filtro por categoría)</td></tr>
+  <tr><td>Carritos</td><td><code>/api/v1/carritos</code></td><td>POST, GET, PUT, DELETE (gestión de ítems)</td></tr>
+</table>
+
+<h3>6.7 Formato JSON</h3>
+<p>Frontend y backend intercambiarán información principalmente mediante JSON (JavaScript Object Notation). La información de un producto podrá representar atributos como identificador, nombre, número del set, descripción, precio, stock, imagen y categoría. Este formato facilita la independencia tecnológica entre cliente y servidor.</p>
+
+<h3>6.8 Separación de responsabilidades</h3>
+<p><strong>Capa de presentación:</strong> Representada por el frontend. Es responsable de interfaces, formularios, navegación, visualización de información e interacción con el usuario.</p>
+<p><strong>API y lógica de negocio:</strong> Representada por el backend. Es responsable de validaciones, reglas de negocio, servicios, seguridad y procesamiento de solicitudes. Organizada en capas: Controller (exposición REST) &rarr; Service (lógica de negocio) &rarr; Repository (acceso a datos).</p>
+<p><strong>Persistencia:</strong> Responsable del acceso y almacenamiento de datos relacionados con categorías, productos, carritos e ítems del carrito, mediante Spring Data MongoDB.</p>
+<p><strong>Base de datos:</strong> MongoDB, responsable del almacenamiento persistente y estructurado de la información en colecciones de documentos.</p>
+<p>Este modelo permite reducir el acoplamiento entre componentes y facilita el mantenimiento, las pruebas y futuras ampliaciones.</p>
+
+<!-- 7. METODOLOGÍA -->
+<div class="page-break"></div>
+<h2>7. Metodología de desarrollo</h2>
+
+<h3>7.1 Metodología seleccionada: Kanban</h3>
+<p>Para el desarrollo del proyecto se utilizará Kanban, una metodología visual y liviana que permite organizar el trabajo sin la complejidad de ceremonias formales. Kanban se basa en un tablero donde cada tarea se representa como una tarjeta que avanza por columnas según su estado.</p>
+<p>Kanban resulta adecuado para este proyecto porque:</p>
+<ul>
+  <li>No requiere roles especializados ni reuniones formales.</li>
+  <li>El flujo de trabajo es continuo: cada integrante toma la siguiente tarea disponible cuando termina la actual.</li>
+  <li>Es fácil de adoptar para un equipo universitario pequeño.</li>
+  <li>Se adapta al calendario semanal del curso, donde cada semana tiene un entregable definido.</li>
+</ul>
+
+<h3>7.2 Tablero Kanban</h3>
+<p>El tablero del proyecto tendrá tres columnas:</p>
+<table>
+  <tr><th>Columna</th><th>Significado</th></tr>
+  <tr><td><strong>Por hacer</strong></td><td>Tareas identificadas y pendientes de iniciar.</td></tr>
+  <tr><td><strong>En progreso</strong></td><td>Tareas en las que alguien está trabajando actualmente.</td></tr>
+  <tr><td><strong>Hecho</strong></td><td>Tareas terminadas y verificadas.</td></tr>
+</table>
+<p>Cada tarjeta del tablero corresponde a un requerimiento funcional, un requerimiento no funcional o una tarea técnica del cronograma semanal. El tablero se puede gestionar con GitHub Projects, Trello o cualquier herramienta equivalente.</p>
+
+<h3>7.3 Reglas del flujo</h3>
+<ul>
+  <li>Cada tarea se vincula a un requerimiento o entregable semanal.</li>
+  <li>Una tarea no pasa a "Hecho" hasta que esté probada y funcional.</li>
+  <li>Al inicio de cada semana se revisan las tareas pendientes y se priorizan según el entregable de esa semana.</li>
+  <li>Al final de cada semana se verifica que las tareas comprometidas estén en "Hecho".</li>
+</ul>
+
+<!-- 8. CRONOGRAMA -->
+<h2>8. Cronograma de trabajo</h2>
+
+<p>El cronograma se estructura desde la Semana 10 hasta la Semana 16 y mantiene los hitos establecidos por el documento del curso.</p>
+
+<table>
+  <tr><th>Semana</th><th>Fase</th><th>Actividades principales</th><th>Resultado esperado</th></tr>
+  <tr>
+    <td>10</td><td>Definición y planeación</td>
+    <td>Planteamiento del problema, objetivos, alcance, RF, RNF, modelo de datos, arquitectura y metodología.</td>
+    <td>Documento técnico inicial.</td>
+  </tr>
+  <tr>
+    <td>11</td><td>Backend inicial</td>
+    <td>Definición de modelos, conexión con base de datos, estructura del backend y primeros endpoints REST.</td>
+    <td>API inicial y Swagger.</td>
+  </tr>
+  <tr>
+    <td>12</td><td>Backend + catálogo</td>
+    <td>CRUD completo de categorías y productos e inicio del frontend del catálogo consumiendo la API.</td>
+    <td>Catálogo conectado al backend.</td>
+  </tr>
+  <tr>
+    <td>13</td><td>Funcionalidades principales</td>
+    <td>Implementación del carrito de compras y panel administrativo.</td>
+    <td>Gestión funcional del carrito y administración.</td>
+  </tr>
+  <tr>
+    <td>14</td><td>Seguridad y estilos</td>
+    <td>HTTPS, mitigación XSS, protección CSRF, SCSS y gestor de dependencias/automatización.</td>
+    <td>Aplicación reforzada y frontend organizado.</td>
+  </tr>
+  <tr>
+    <td>15</td><td>Integración y pruebas</td>
+    <td>Integración completa frontend-backend, validación funcional, corrección de errores y documentación técnica.</td>
+    <td>Versión candidata para entrega.</td>
+  </tr>
+  <tr>
+    <td>16</td><td>Entrega final</td>
+    <td>Despliegue, comprobación de accesibilidad y sustentación.</td>
+    <td>Aplicación completa y accesible.</td>
+  </tr>
+</table>
+
+<h3>8.1 Semana 10 - Planeación</h3>
+<p>Durante esta semana se define completamente el proyecto antes de comenzar su implementación. Se elaboran el problema, objetivos, alcance, requerimientos, modelo de datos, arquitectura, metodología y cronograma. No se desarrolla todavía código correspondiente a la aplicación final.</p>
+
+<h3>8.2 Semana 11 - Backend inicial</h3>
+<p>Se inicia la implementación técnica del backend: estructura del proyecto con Spring Boot 4.0.2, conexión con MongoDB Atlas, primeros modelos (Categoria, Producto, Carrito, ItemCarrito), primeros servicios REST e incorporación inicial de Swagger/OpenAPI.</p>
+
+<h3>8.3 Semana 12 - CRUD y catálogo</h3>
+<p>Se implementará el CRUD completo de categorías y productos. Paralelamente se iniciará el frontend del catálogo consumiendo directamente los servicios REST desarrollados en el backend.</p>
+
+<h3>8.4 Semana 13 - Carrito y administración</h3>
+<p>Se implementarán el carrito de compras y el panel administrativo. El carrito permitirá agregar, eliminar y modificar cantidades, mientras que el panel permitirá gestionar productos y categorías desde la interfaz gráfica.</p>
+
+<h3>8.5 Semana 14 - Seguridad y calidad del frontend</h3>
+<p>La etapa estará enfocada en HTTPS, mitigación de XSS, protección CSRF, uso de SCSS y aplicación de un gestor de dependencias o automatizador.</p>
+
+<h3>8.6 Semana 15 - Integración y pruebas</h3>
+<p>Se realizará una verificación completa de CRUD, filtrado del catálogo, carrito, cálculo de totales, panel administrativo, comunicación frontend-backend, controles de seguridad, Swagger y comportamiento general de la aplicación.</p>
+
+<h3>8.7 Semana 16 - Despliegue y sustentación</h3>
+<p>La última etapa corresponde al despliegue de la aplicación en un entorno accesible. Deberá verificarse la disponibilidad de backend, frontend, base de datos, API, documentación Swagger y funcionalidades críticas desde un equipo externo al entorno de desarrollo.</p>
+
+<!-- 9. CONCLUSIONES -->
+<div class="page-break"></div>
+<h2>9. Conclusiones de la etapa de planeación</h2>
+
+<p>La definición realizada establece una base técnica clara para la construcción de una tienda en línea modular especializada en productos LEGO. La solución busca resolver la dispersión del catálogo, la falta de control centralizado de productos y existencias y las limitaciones de un proceso de compra administrado manualmente mediante redes sociales.</p>
+
+<p>La arquitectura desacoplada permitirá desarrollar el frontend y el backend de manera independiente, utilizando una API REST como único mecanismo de comunicación. Esta separación facilita el mantenimiento del sistema, mejora su capacidad de evolución y cumple con los lineamientos técnicos establecidos para el proyecto.</p>
+
+<p>El modelo de datos propuesto, basado en MongoDB como base de datos documental, cubre las necesidades fundamentales relacionadas con categorías, productos y carrito de compras. El uso de documentos embebidos para los ítems del carrito sigue las mejores prácticas de diseño en bases de datos NoSQL, almacenando juntos los datos que se acceden juntos.</p>
+
+<p>Los requerimientos funcionales y no funcionales permiten establecer criterios concretos para verificar posteriormente el cumplimiento del sistema.</p>
+
+<p>Finalmente, la adopción de una metodología Scrum adaptada al contexto académico permite organizar las actividades entre las semanas 10 y 16 mediante hitos progresivos. De esta forma, el proyecto avanza desde la planeación y definición arquitectónica hasta la implementación del backend, frontend, seguridad, pruebas, documentación, despliegue y sustentación final.</p>
+
+<!-- 10. FUENTE -->
+<h2>10. Fuente de lineamientos del proyecto</h2>
+<p>Documento base del curso: "Examen final.pdf" - Documento técnico del Proyecto de Aula: Tienda en Línea Modular. Los requisitos, criterios de aceptación y entregables semanales de esta planeación se estructuraron con base en dicho documento.</p>
+
+</body>
+</html>

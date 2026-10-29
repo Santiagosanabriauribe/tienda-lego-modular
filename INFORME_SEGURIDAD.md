@@ -1,7 +1,7 @@
 # Informe de Seguridad — Tienda LEGO Modular
 
 **Estudiante:** Santiago Sanabria Uribe  
-**Fecha:** 2026-10-28  
+**Fecha:** 2026-10-29  
 
 ---
 
@@ -9,14 +9,14 @@
 
 | # | Pregunta | Si / No |
 |---|----------|---------|
-| 1 | Hay contraseñas guardadas tal cual? | Si (SHA-256 sin sal, equivalente a texto plano para ataques de diccionario) |
-| 2 | Hay credenciales en el codigo? | Si (URI de MongoDB y password del keystore estaban en application.properties) |
-| 3 | Hay archivos de secretos en git? | No (.env esta en .gitignore) |
-| 4 | Se muestra texto de usuarios como HTML? | Si (innerHTML sin escapar en app.js, carrito.js, admin.js) |
-| 5 | Se puede ver un recurso de otro usuario cambiando el id? | Si (GET /api/pedidos/{id} no verificaba propietario) |
-| 6 | Las rutas de administrador solo estan ocultas en el frontend? | Si (POST/PUT/DELETE en productos/categorias no verificaban rol en el servidor) |
-| 7 | CORS esta abierto a cualquier origen? | Si (allowedOriginPatterns("*")) |
-| 8 | El proyecto usa HTTP simple? | No (HTTPS con keystore.p12, puerto 8443) |
+| 1 | Hay contraseñas guardadas tal cual? | No — corregido: BCrypt con factor 12 (`$2b$12$...`) |
+| 2 | Hay credenciales en el codigo? | No — corregido: application.properties usa `${MONGODB_URI}`, `${JWT_SECRET}`, `${SSL_KEYSTORE_PASSWORD}`. Valores reales en application-local.properties (gitignored) |
+| 3 | Hay archivos de secretos en git? | No (.env y application-local.properties en .gitignore) |
+| 4 | Se muestra texto de usuarios como HTML? | No — corregido: funcion `esc()` escapa todo dato de usuario con `textContent` |
+| 5 | Se puede ver un recurso de otro usuario cambiando el id? | No — corregido: `PedidoController.uno()` verifica `auth.getName()` contra `pedido.getUsuarioId()` |
+| 6 | Las rutas de administrador solo estan ocultas en el frontend? | No — corregido: `hasRole("ADMIN")` en SecurityConfig para POST/PUT/DELETE de productos, categorias, imagenes |
+| 7 | CORS esta abierto a cualquier origen? | No — corregido: solo `https://localhost:8443`, headers limitados a Content-Type y X-XSRF-TOKEN |
+| 8 | El proyecto usa HTTP simple? | No (HTTPS con keystore.p12, puerto 8443, HSTS activo) |
 
 ---
 
@@ -36,6 +36,9 @@
 | 10 | Sin cabecera HSTS | A02 – Configuracion insegura | `Strict-Transport-Security` no aparecia en las respuestas | Agregado HSTS con `max-age=300` (corto para desarrollo) en SecurityConfig | Corregido |
 | 11 | Errores exponian detalles internos | A09 – Registros y alertas | Un error 500 mostraba stack trace y rutas de archivos del servidor | `ErroresGlobales` (@RestControllerAdvice): respuesta generica al exterior, detalle solo en `log.error()`. `server.error.include-message=never` | Corregido |
 | 12 | Sin CSP en respuestas de archivos estaticos | A02 – Configuracion insegura | Las paginas HTML servidas por nginx no tenian cabecera CSP | Agregado `add_header Content-Security-Policy`, `X-Content-Type-Options` y `X-Frame-Options` en nginx.conf | Corregido |
+| 13 | Pedido directo acepta cantidad negativa | A06 – Diseño inseguro | `POST /api/pedidos/directo` con `cantidad: -5` creaba pedido con total -4249.95 COP. Tambien aceptaba cantidad 0 | Validacion `if (cantidad <= 0) throw` en `PedidoService.crearDirecto()` y `CarritoService.agregarItem()`. Ahora devuelve 400 "La cantidad debe ser mayor a cero" | Corregido |
+| 14 | Registro aceptaba campo rol del cliente | A06 – Diseño inseguro | `POST /api/auth/registro` con `"rol":"ADMIN"` en el body podia escalar privilegios | El controlador ignora el campo `rol` del body y siempre asigna USUARIO. Si se envia `ADMIN`, responde 400 "No es posible registrar una cuenta de administrador" | Corregido |
+| 15 | Proteccion CSRF activa y verificada | A08 – Integridad | `POST /api/carritos` sin cabecera X-XSRF-TOKEN devuelve 403 Forbidden. Con el token correcto devuelve 201. Archivo `ataque.html` fuera del proyecto demuestra el bloqueo | Implementado con `CookieCsrfTokenRepository.withHttpOnlyFalse()` + `CsrfCookieFilter`. Login y registro exentos. Frontend envia el token via `csrf.js` | Corregido |
 
 ---
 
@@ -48,9 +51,9 @@
 | A03 Cadena de suministro | Se auditaron las dependencias? | `./gradlew dependencies` revisado; no se detectaron CVE criticos en las versiones usadas |
 | A04 Fallas criptograficas | HTTPS activo? Contraseñas con hash lento? Secretos fuera del codigo? | Hallazgos 1 y 2: BCrypt, .env, HTTPS con keystore |
 | A05 Inyeccion (incluye XSS) | Salida escapada y entradas validadas por tipo? | Hallazgo 3: funcion esc() en todo el frontend, validacion @Valid en DTOs |
-| A06 Diseño inseguro | Hay logica que se pueda abusar (cantidades negativas, cupones sin limite)? | Probado: cantidad negativa rechazada por validacion de stock; precio se lee de la BD, no del cliente |
+| A06 Diseño inseguro | Hay logica que se pueda abusar (cantidades negativas, cupones sin limite)? | Hallazgos 13 y 14: cantidad negativa en pedido directo generaba total negativo (-4249.95). Corregido con validacion `cantidad <= 0`. Registro con rol ADMIN bloqueado |
 | A07 Fallas de autenticacion | Limite de intentos, mensajes genericos, tokens con vencimiento? | Hallazgos 7 y 8: JWT 15 min, rate limiting 5 intentos, mensaje generico "Usuario o contraseña incorrectos" |
-| A08 Integridad de software o datos | El token esta firmado y se verifica? Se confia en datos del cliente? | JWT firmado con HMAC-SHA256; el rol viene del token del servidor, no del body del cliente |
+| A08 Integridad de software o datos | El token esta firmado y se verifica? Se confia en datos del cliente? | JWT firmado con HMAC-SHA384; el rol viene del token, no del body. CSRF con double-submit cookie (hallazgo 15). Precio se lee de la BD, no del cliente |
 | A09 Registros y alertas | Se registran los intentos de login fallidos y los errores? | Hallazgo 11: ErroresGlobales loguea con `log.error()`, stacktrace queda en el servidor |
 | A10 Condiciones excepcionales | Los errores fallan de forma segura (niegan, no permiten)? | ErroresGlobales devuelve "Error interno" sin detalles; Spring Security devuelve 401/403, nunca ignora |
 
@@ -120,9 +123,66 @@ La validacion de roles y propietario en el servidor (defense in depth). El caso 
 
 ---
 
+## Evidencias de pruebas realizadas
+
+### Parte 1 — HTTPS local
+- La aplicacion carga en `https://localhost:8443` con candado de certificado autofirmado
+- Headers verificados con `curl -ks -I https://localhost:8443/index.html`:
+  - `Strict-Transport-Security: max-age=300 ; includeSubDomains`
+  - `X-Frame-Options: DENY`
+  - `Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; frame-ancestors 'none'`
+  - `X-Content-Type-Options: nosniff`
+  - `Cache-Control: no-cache, no-store, max-age=0, must-revalidate`
+
+### Parte 2 — Registro, login, hash y token
+- Registro con `POST /api/v1/auth/registro` devuelve `{"rol":"USUARIO","ok":true}`
+- Login devuelve cookie `token` con flags: `HttpOnly`, `Secure`, `SameSite=Strict`, `Max-Age=900` (15 min)
+- `document.cookie` en la consola del navegador devuelve cadena vacia — HttpOnly funciona
+- Contraseña en Atlas comienza con `$2a$12$` (BCrypt factor 12)
+- Sexto intento de login fallido devuelve `429 {"error":"Demasiados intentos, espere 15 minutos"}`
+- Ruta protegida sin token devuelve `401`
+
+### Parte 3 — Roles y control de acceso
+- `GET /api/v1/pedidos` como usuario normal devuelve `403 Forbidden`
+- `GET /api/v1/pedidos/{id}` como usuario B pidiendo pedido de A devuelve `404`
+- `POST /api/v1/auth/registro` con `"rol":"ADMIN"` devuelve `400 {"error":"No es posible registrar una cuenta de administrador"}`
+- `DELETE /api/v1/productos/{id}` como cliente devuelve `403`
+
+### Parte 4 — XSS
+- Funcion `esc()` en app.js escapa todo dato de usuario con `document.createElement('span').textContent = str`
+- No se usa `innerHTML` con datos de usuario sin escapar
+- CSP `script-src 'self'` bloquea scripts inline inyectados
+- Registro de usuario con nombre `<script>alert("XSS")</script>` se guarda como texto plano, se muestra escapado
+
+### Parte 5 — CSRF
+- `POST /api/v1/carritos` SIN cabecera X-XSRF-TOKEN: `403 Forbidden`
+- `POST /api/v1/carritos` CON cabecera X-XSRF-TOKEN correcta: `201 Created`
+- Archivo `ataque.html` fuera del proyecto intenta POST sin token CSRF — bloqueado
+- La cookie XSRF-TOKEN es legible por JS (necesario para double-submit), la cookie token es HttpOnly
+- Pregunta: si usamos SameSite=Strict, por que ademas el token CSRF? Defensa en profundidad: navegadores viejos no soportan SameSite, y subdominios podrian saltarlo
+
+### Parte 6 — Secretos, CORS, errores
+- `application.properties` usa placeholders: `${MONGODB_URI}`, `${JWT_SECRET}`, `${SSL_KEYSTORE_PASSWORD}`
+- Valores reales en `application-local.properties` (activado por perfil `local` en `bootRun`)
+- `.gitignore` incluye `.env` y `application-local.properties`
+- `.env.example` con valores de ejemplo, sin secretos reales
+- `git log --all -p -S"mongodb+srv"` — verificar que no hay secretos en el historial
+- CORS restringido a `https://localhost:8443` con headers limitados
+- `ErroresGlobales`: errores devuelven `{"error":"Error interno"}` sin stacktrace ni rutas
+
+### Parte 7 — Diseño inseguro (A06)
+- **Cantidad negativa ANTES del fix:** `POST /api/v1/pedidos/directo` con `cantidad: -5` creaba pedido con total `-4249.95 COP` (HTTP 201)
+- **Cantidad negativa DESPUES del fix:** devuelve `400 {"error":"La cantidad debe ser mayor a cero"}`
+- **Cantidad cero DESPUES del fix:** devuelve `400 {"error":"La cantidad debe ser mayor a cero"}`
+- **Cantidad valida (1):** crea pedido normalmente con `201`
+- **Campo de mas (rol ADMIN en registro):** devuelve `400 {"error":"No es posible registrar una cuenta de administrador"}`
+
+---
+
 ## Entrega
 
 - Rama: `seguridad`
-- Secretos: en `.env` (no versionado), `.env.example` como plantilla
-- Certificado: `keystore.p12` en `.gitignore`
+- Secretos: en `application-local.properties` (no versionado), `.env.example` como plantilla
+- Certificado: `keystore.p12` en `src/main/resources` (clave en variable de entorno)
 - Sin credenciales ni claves privadas en el repositorio
+- `ataque.html` en la raiz del proyecto como evidencia de prueba CSRF

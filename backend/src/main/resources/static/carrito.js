@@ -1,0 +1,136 @@
+const API = '/api/v1';
+
+const rol = localStorage.getItem('rol');
+
+function esc(str) {
+    const el = document.createElement('span');
+    el.textContent = str;
+    return el.innerHTML;
+}
+
+function renderNav() {
+    const nav = document.getElementById('nav-links');
+    if (!rol) {
+        nav.innerHTML = `
+            <a href="index.html">Catalogo</a>
+            <a href="carrito.html">Carrito</a>
+            <a href="login.html">Iniciar Sesion</a>
+            <a href="registro.html">Registrarse</a>
+        `;
+        return;
+    }
+    nav.innerHTML = `
+        <a href="index.html">Catalogo</a>
+        <a href="carrito.html">Carrito</a>
+        ${rol === 'ADMIN' ? '<a href="admin.html">Admin</a>' : ''}
+        <a href="#" id="btn-logout">Salir</a>
+    `;
+    document.getElementById('btn-logout').addEventListener('click', (e) => {
+        e.preventDefault();
+        fetch(`${API}/auth/logout`, { method: 'POST' }).finally(() => {
+            localStorage.removeItem('rol');
+            localStorage.removeItem('carritoId');
+            window.location.href = 'login.html';
+        });
+    });
+}
+
+async function cargarCarrito() {
+    const contenido = document.getElementById('carrito-contenido');
+    const carritoId = localStorage.getItem('carritoId');
+
+    if (!carritoId) {
+        contenido.innerHTML = '<p class="sin-productos">Tu carrito esta vacio. <a href="index.html">Ver catalogo</a></p>';
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/carritos/${carritoId}`);
+        if (!res.ok) {
+            contenido.innerHTML = '<p class="sin-productos">Tu carrito esta vacio. <a href="index.html">Ver catalogo</a></p>';
+            return;
+        }
+
+        const carrito = await res.json();
+
+        if (!carrito.items || carrito.items.length === 0) {
+            contenido.innerHTML = '<p class="sin-productos">Tu carrito esta vacio. <a href="index.html">Ver catalogo</a></p>';
+            return;
+        }
+
+        contenido.innerHTML = `
+            <div class="carrito-lista">
+                ${carrito.items.map(item => `
+                    <div class="carrito-item">
+                        <div class="carrito-item-info">
+                            <h3>${esc(item.productoNombre)}</h3>
+                            <p>Precio unitario: ${formatoPrecio(item.precioUnitario)}</p>
+                        </div>
+                        <div class="carrito-item-controles">
+                            <button class="btn-cantidad" data-action="cantidad" data-pid="${esc(item.productoId)}" data-nueva="${item.cantidad - 1}">-</button>
+                            <span class="cantidad">${item.cantidad}</span>
+                            <button class="btn-cantidad" data-action="cantidad" data-pid="${esc(item.productoId)}" data-nueva="${item.cantidad + 1}">+</button>
+                            <span class="item-subtotal">${formatoPrecio(item.subtotal)}</span>
+                            <button class="btn-eliminar" data-action="eliminar" data-pid="${esc(item.productoId)}">Eliminar</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="carrito-total">
+                <h3>Total: ${formatoPrecio(carrito.total)}</h3>
+                <button class="btn-primary btn-comprar" id="btn-comprar-todo">Comprar Todo</button>
+            </div>
+        `;
+
+        contenido.querySelectorAll('[data-action="cantidad"]').forEach(btn => {
+            btn.addEventListener('click', () => cambiarCantidad(btn.dataset.pid, Number(btn.dataset.nueva)));
+        });
+        contenido.querySelectorAll('[data-action="eliminar"]').forEach(btn => {
+            btn.addEventListener('click', () => eliminarItem(btn.dataset.pid));
+        });
+        document.getElementById('btn-comprar-todo').addEventListener('click', comprarCarrito);
+
+    } catch (err) {
+        contenido.innerHTML = '<p class="sin-productos">Error al cargar el carrito.</p>';
+    }
+}
+
+async function cambiarCantidad(productoId, nuevaCantidad) {
+    const carritoId = localStorage.getItem('carritoId');
+    if (nuevaCantidad <= 0) {
+        await eliminarItem(productoId);
+        return;
+    }
+    try {
+        await fetch(`${API}/carritos/${carritoId}/items/${productoId}?cantidad=${nuevaCantidad}`, {
+            method: 'PUT'
+        });
+        cargarCarrito();
+    } catch (err) {
+        console.error('Error al actualizar cantidad');
+    }
+}
+
+async function eliminarItem(productoId) {
+    const carritoId = localStorage.getItem('carritoId');
+    try {
+        await fetch(`${API}/carritos/${carritoId}/items/${productoId}`, {
+            method: 'DELETE'
+        });
+        cargarCarrito();
+    } catch (err) {
+        console.error('Error al eliminar producto');
+    }
+}
+
+function comprarCarrito() {
+    const carritoId = localStorage.getItem('carritoId');
+    window.location.href = `pago.html?tipo=carrito&carritoId=${carritoId}`;
+}
+
+function formatoPrecio(precio) {
+    return '$ ' + Math.round(Number(precio)).toLocaleString('es-CO') + ' COP';
+}
+
+renderNav();
+cargarCarrito();
