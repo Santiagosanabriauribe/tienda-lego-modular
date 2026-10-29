@@ -4,12 +4,9 @@ import com.tiendalego.model.Usuario;
 import com.tiendalego.repository.UsuarioRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -17,12 +14,14 @@ import java.util.regex.Pattern;
 public class UsuarioService {
 
     private final UsuarioRepository repo;
+    private final PasswordEncoder encoder;
 
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
-    public UsuarioService(UsuarioRepository repo) {
+    public UsuarioService(UsuarioRepository repo, PasswordEncoder encoder) {
         this.repo = repo;
+        this.encoder = encoder;
     }
 
     @Bean
@@ -30,7 +29,7 @@ public class UsuarioService {
         return args -> {
             if (!repo.existsByEmail("admin@tiendalego.com")) {
                 Usuario admin = new Usuario("Administrador", "admin@tiendalego.com",
-                        hashPassword("admin1234"), "ADMIN");
+                        encoder.encode("admin1234"), "ADMIN");
                 repo.save(admin);
             }
         };
@@ -43,32 +42,24 @@ public class UsuarioService {
         if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
             throw new IllegalArgumentException("El formato del correo electronico no es valido");
         }
-        if (repo.existsByEmail(email)) {
+        String emailNorm = email.trim().toLowerCase();
+        if (repo.existsByEmail(emailNorm)) {
             throw new IllegalArgumentException("Ya existe un usuario con ese email");
         }
         if ("ADMIN".equalsIgnoreCase(rol)) {
             throw new IllegalArgumentException("No es posible registrar una cuenta de administrador");
         }
-        Usuario usuario = new Usuario(nombre, email, hashPassword(password), "USUARIO");
+        Usuario usuario = new Usuario(nombre, emailNorm, encoder.encode(password), "USUARIO");
         return repo.save(usuario);
     }
 
     public Optional<Usuario> login(String email, String password) {
-        return repo.findByEmail(email)
-                .filter(u -> u.getPassword().equals(hashPassword(password)));
+        String emailNorm = String.valueOf(email).trim().toLowerCase();
+        return repo.findByEmail(emailNorm)
+                .filter(u -> encoder.matches(String.valueOf(password), u.getPassword()));
     }
 
     public Optional<Usuario> buscarPorId(String id) {
         return repo.findById(id);
-    }
-
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

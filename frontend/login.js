@@ -23,7 +23,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             return;
         }
 
-        localStorage.setItem('usuario', JSON.stringify(data));
+        localStorage.setItem('rol', data.rol);
         window.location.href = 'index.html';
     } catch (err) {
         errorMsg.textContent = 'Error de conexion con el servidor';
