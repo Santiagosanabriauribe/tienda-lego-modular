@@ -10,4 +10,6 @@ public interface ProductoRepository extends MongoRepository<Producto, String> {
     List<Producto> findByCategoriaIdAndActivoTrue(String categoriaId);
 
     List<Producto> findByActivoTrue();
+
+    boolean existsByCategoriaId(String categoriaId);
 }

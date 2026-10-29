@@ -121,7 +121,15 @@ function cancelarCategoria() {
 
 async function eliminarCategoria(id) {
     if (confirm('Eliminar esta categoria?')) {
-        await fetch(`${API}/categorias/${id}`, { method: 'DELETE' });
+        const res = await fetch(`${API}/categorias/${id}`, { method: 'DELETE' });
+        if (!res.ok) {
+            try {
+                const data = await res.json();
+                alert(data.error || 'Error al eliminar la categoria');
+            } catch {
+                alert('Error al eliminar la categoria');
+            }
+        }
         cargarCategorias();
     }
 }

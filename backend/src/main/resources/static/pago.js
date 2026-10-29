@@ -2,7 +2,7 @@ const API = '/api/v1';
 
 const rol = localStorage.getItem('rol');
 if (!rol) {
-    window.location.href = 'login.html';
+    window.location.href = 'login.html?returnUrl=' + encodeURIComponent(window.location.href);
 }
 
 const params = new URLSearchParams(window.location.search);

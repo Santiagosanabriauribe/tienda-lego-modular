@@ -2,6 +2,7 @@ package com.tiendalego.service;
 
 import com.tiendalego.model.Categoria;
 import com.tiendalego.repository.CategoriaRepository;
+import com.tiendalego.repository.ProductoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,9 +12,11 @@ import java.util.Optional;
 public class CategoriaService {
 
     private final CategoriaRepository repo;
+    private final ProductoRepository productoRepo;
 
-    public CategoriaService(CategoriaRepository repo) {
+    public CategoriaService(CategoriaRepository repo, ProductoRepository productoRepo) {
         this.repo = repo;
+        this.productoRepo = productoRepo;
     }
 
     public List<Categoria> listarActivas() {
@@ -44,6 +47,10 @@ public class CategoriaService {
     }
 
     public boolean eliminar(String id) {
+        if (productoRepo.existsByCategoriaId(id)) {
+            throw new IllegalArgumentException(
+                    "No se puede eliminar: hay productos asociados a esta categoria");
+        }
         return repo.findById(id).map(cat -> {
             repo.delete(cat);
             return true;

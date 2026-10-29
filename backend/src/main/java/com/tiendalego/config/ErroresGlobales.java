@@ -26,6 +26,11 @@ public class ErroresGlobales {
         return ResponseEntity.badRequest().body(Map.of("error", "Datos invalidos"));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<Map<String, String>> argInvalido(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     ResponseEntity<Map<String, String>> otro(Exception e) {
         log.error("Error no controlado", e);

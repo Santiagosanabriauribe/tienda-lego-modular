@@ -24,7 +24,8 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         }
 
         localStorage.setItem('rol', data.rol);
-        window.location.href = 'index.html';
+        const returnUrl = new URLSearchParams(window.location.search).get('returnUrl');
+        window.location.href = returnUrl || 'index.html';
     } catch (err) {
         errorMsg.textContent = 'Error de conexion con el servidor';
         errorMsg.classList.remove('hidden');

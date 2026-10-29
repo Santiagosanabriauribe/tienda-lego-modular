@@ -26,6 +26,12 @@ public class PedidoService {
     public Pedido crearDesdeCarrito(String carritoId, String usuarioId, String usuarioNombre,
                                     String metodoPago, String direccion, String ciudad,
                                     String departamento, String telefono, String destinatario) {
+        if (direccion == null || direccion.isBlank() || ciudad == null || ciudad.isBlank()
+                || departamento == null || departamento.isBlank() || telefono == null || telefono.isBlank()
+                || destinatario == null || destinatario.isBlank()) {
+            throw new IllegalArgumentException("Todos los datos de envio son obligatorios");
+        }
+
         Carrito carrito = carritoRepo.findById(carritoId)
                 .orElseThrow(() -> new IllegalArgumentException("Carrito no encontrado"));
 
@@ -41,12 +47,6 @@ public class PedidoService {
             }
             producto.setStock(producto.getStock() - item.getCantidad());
             productoRepo.save(producto);
-        }
-
-        if (direccion == null || direccion.isBlank() || ciudad == null || ciudad.isBlank()
-                || departamento == null || departamento.isBlank() || telefono == null || telefono.isBlank()
-                || destinatario == null || destinatario.isBlank()) {
-            throw new IllegalArgumentException("Todos los datos de envio son obligatorios");
         }
 
         Pedido pedido = new Pedido();
@@ -76,6 +76,11 @@ public class PedidoService {
         if (cantidad <= 0) {
             throw new IllegalArgumentException("La cantidad debe ser mayor a cero");
         }
+        if (direccion == null || direccion.isBlank() || ciudad == null || ciudad.isBlank()
+                || departamento == null || departamento.isBlank() || telefono == null || telefono.isBlank()
+                || destinatario == null || destinatario.isBlank()) {
+            throw new IllegalArgumentException("Todos los datos de envio son obligatorios");
+        }
 
         Producto producto = productoRepo.findById(productoId)
                 .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
@@ -89,12 +94,6 @@ public class PedidoService {
 
         ItemCarrito item = new ItemCarrito(producto.getId(), producto.getNombre(),
                 cantidad, producto.getPrecio());
-
-        if (direccion == null || direccion.isBlank() || ciudad == null || ciudad.isBlank()
-                || departamento == null || departamento.isBlank() || telefono == null || telefono.isBlank()
-                || destinatario == null || destinatario.isBlank()) {
-            throw new IllegalArgumentException("Todos los datos de envio son obligatorios");
-        }
 
         Pedido pedido = new Pedido();
         pedido.setUsuarioId(usuarioId);
