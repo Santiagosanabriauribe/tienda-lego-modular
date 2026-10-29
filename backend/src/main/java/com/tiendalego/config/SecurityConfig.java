@@ -82,7 +82,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://localhost:8443"));
+        String origins = System.getenv("CORS_ORIGINS");
+        if (origins != null && !origins.isBlank()) {
+            config.setAllowedOrigins(List.of(origins.split(",")));
+        } else {
+            config.setAllowedOrigins(List.of("https://localhost:8443"));
+        }
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN"));
         config.setAllowCredentials(true);
