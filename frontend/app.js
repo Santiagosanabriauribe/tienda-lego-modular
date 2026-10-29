@@ -11,15 +11,16 @@ function esc(str) {
     return el.innerHTML;
 }
 
-function getUsuario() {
-    try { return JSON.parse(localStorage.getItem('usuario')); } catch { return null; }
+function getRol() {
+    return localStorage.getItem('rol');
 }
+function isLoggedIn() { return getRol() !== null; }
+function isAdmin() { return getRol() === 'ADMIN'; }
 
 function renderNav() {
     const nav = document.getElementById('nav-links');
-    const usuario = getUsuario();
 
-    if (!usuario) {
+    if (!isLoggedIn()) {
         nav.innerHTML = `
             <a href="login.html">Iniciar Sesion</a>
             <a href="registro.html">Registrarse</a>
@@ -28,14 +29,16 @@ function renderNav() {
         nav.innerHTML = `
             <a href="index.html">Catalogo</a>
             <a href="carrito.html">Carrito</a>
-            ${usuario.rol === 'ADMIN' ? '<a href="admin.html">Admin</a>' : `<span class="nav-user">${esc(usuario.nombre)}</span>`}
+            ${isAdmin() ? '<a href="admin.html">Admin</a>' : ''}
             <a href="#" id="btn-logout">Salir</a>
         `;
         document.getElementById('btn-logout').addEventListener('click', (e) => {
             e.preventDefault();
-            localStorage.removeItem('usuario');
-            localStorage.removeItem('carritoId');
-            window.location.href = 'index.html';
+            fetch(`${API}/auth/logout`, { method: 'POST' }).finally(() => {
+                localStorage.removeItem('rol');
+                localStorage.removeItem('carritoId');
+                window.location.href = 'index.html';
+            });
         });
     }
 }
@@ -106,7 +109,6 @@ function nombreCategoria(categoriaId) {
 
 function renderProductos() {
     const grid = document.getElementById('productos-grid');
-    const usuario = getUsuario();
 
     if (productos.length === 0) {
         grid.innerHTML = '<p class="sin-productos">No hay productos disponibles.</p>';
@@ -132,7 +134,7 @@ function renderProductos() {
                         ${p.stock > 0 ? `${p.stock} disponibles` : 'Agotado'}
                     </span>
                 </div>
-                ${usuario && p.stock > 0 ? `
+                ${isLoggedIn() && p.stock > 0 ? `
                     <div class="producto-acciones" id="acciones-${esc(p.id)}">
                         ${enCarrito > 0
                             ? renderContador(p.id, enCarrito, p.stock)
@@ -202,7 +204,6 @@ function abrirDetalle(id) {
 
     const modal = document.getElementById('modal');
     const body = document.getElementById('modal-body');
-    const usuario = getUsuario();
     const enCarrito = cantidadesCarrito[p.id] || 0;
 
     body.innerHTML = `
@@ -221,7 +222,7 @@ function abrirDetalle(id) {
                         ${p.stock > 0 ? `${p.stock} unidades disponibles` : 'Agotado'}
                     </span>
                 </div>
-                ${usuario && p.stock > 0 ? `
+                ${isLoggedIn() && p.stock > 0 ? `
                     <div class="producto-acciones" id="acciones-modal-${esc(p.id)}" style="margin-top:1rem">
                         ${enCarrito > 0
                             ? renderContador(p.id, enCarrito, p.stock)
@@ -239,8 +240,7 @@ function abrirDetalle(id) {
 }
 
 async function agregarAlCarrito(productoId) {
-    const usuario = getUsuario();
-    if (!usuario) { window.location.href = 'login.html'; return; }
+    if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
 
     let carritoId = localStorage.getItem('carritoId');
 
@@ -320,8 +320,7 @@ function actualizarBotonesModal(productoId) {
 }
 
 function comprarDirecto(productoId) {
-    const usuario = getUsuario();
-    if (!usuario) { window.location.href = 'login.html'; return; }
+    if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
     window.location.href = `pago.html?tipo=directo&productoId=${productoId}&cantidad=1`;
 }
 

@@ -1,7 +1,7 @@
 const API = '/api/v1';
 
-const usuario = JSON.parse(localStorage.getItem('usuario'));
-if (!usuario) {
+const rol = localStorage.getItem('rol');
+if (!rol) {
     window.location.href = 'login.html';
 }
 
@@ -126,23 +126,10 @@ async function procesarPago() {
 
         if (tipo === 'carrito') {
             url = `${API}/pedidos/carrito`;
-            body = {
-                carritoId,
-                usuarioId: usuario.id,
-                usuarioNombre: usuario.nombre,
-                metodoPago,
-                ...datosEnvio
-            };
+            body = { carritoId, metodoPago, ...datosEnvio };
         } else {
             url = `${API}/pedidos/directo`;
-            body = {
-                productoId,
-                cantidad: String(cantidad),
-                usuarioId: usuario.id,
-                usuarioNombre: usuario.nombre,
-                metodoPago,
-                ...datosEnvio
-            };
+            body = { productoId, cantidad: String(cantidad), metodoPago, ...datosEnvio };
         }
 
         const res = await fetch(url, {

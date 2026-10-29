@@ -1,7 +1,7 @@
 const API = '/api/v1';
 
-const usuario = JSON.parse(localStorage.getItem('usuario'));
-if (!usuario) {
+const rol = localStorage.getItem('rol');
+if (!rol) {
     window.location.href = 'login.html';
 }
 
@@ -13,18 +13,20 @@ function esc(str) {
 
 function renderNav() {
     const nav = document.getElementById('nav-links');
-    if (!usuario) return;
+    if (!rol) return;
     nav.innerHTML = `
         <a href="index.html">Catalogo</a>
         <a href="carrito.html">Carrito</a>
-        ${usuario.rol === 'ADMIN' ? '<a href="admin.html">Admin</a>' : `<span class="nav-user">${esc(usuario.nombre)}</span>`}
+        ${rol === 'ADMIN' ? '<a href="admin.html">Admin</a>' : ''}
         <a href="#" id="btn-logout">Salir</a>
     `;
     document.getElementById('btn-logout').addEventListener('click', (e) => {
         e.preventDefault();
-        localStorage.removeItem('usuario');
-        localStorage.removeItem('carritoId');
-        window.location.href = 'login.html';
+        fetch(`${API}/auth/logout`, { method: 'POST' }).finally(() => {
+            localStorage.removeItem('rol');
+            localStorage.removeItem('carritoId');
+            window.location.href = 'login.html';
+        });
     });
 }
 

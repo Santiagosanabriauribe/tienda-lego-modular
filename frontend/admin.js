@@ -1,12 +1,8 @@
 const API = '/api/v1';
 
-const usuario = JSON.parse(localStorage.getItem('usuario'));
-if (!usuario || usuario.rol !== 'ADMIN') {
+const rol = localStorage.getItem('rol');
+if (rol !== 'ADMIN') {
     window.location.href = 'index.html';
-}
-
-function adminHeaders(extra = {}) {
-    return { 'X-Usuario-Id': usuario.id, ...extra };
 }
 
 function esc(str) {
@@ -25,9 +21,11 @@ function renderNav() {
     `;
     document.getElementById('btn-logout').addEventListener('click', (e) => {
         e.preventDefault();
-        localStorage.removeItem('usuario');
-        localStorage.removeItem('carritoId');
-        window.location.href = 'login.html';
+        fetch(`${API}/auth/logout`, { method: 'POST' }).finally(() => {
+            localStorage.removeItem('rol');
+            localStorage.removeItem('carritoId');
+            window.location.href = 'login.html';
+        });
     });
 }
 
@@ -92,13 +90,13 @@ document.getElementById('form-categoria').addEventListener('submit', async (e) =
     if (id) {
         await fetch(`${API}/categorias/${id}`, {
             method: 'PUT',
-            headers: adminHeaders({ 'Content-Type': 'application/json' }),
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
     } else {
         await fetch(`${API}/categorias`, {
             method: 'POST',
-            headers: adminHeaders({ 'Content-Type': 'application/json' }),
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
     }
@@ -123,7 +121,7 @@ function cancelarCategoria() {
 
 async function eliminarCategoria(id) {
     if (confirm('Eliminar esta categoria?')) {
-        await fetch(`${API}/categorias/${id}`, { method: 'DELETE', headers: adminHeaders() });
+        await fetch(`${API}/categorias/${id}`, { method: 'DELETE' });
         cargarCategorias();
     }
 }
@@ -181,7 +179,7 @@ document.getElementById('prod-archivo').addEventListener('change', async (e) => 
     formData.append('archivo', archivo);
 
     try {
-        const res = await fetch(`${API}/imagenes`, { method: 'POST', headers: adminHeaders(), body: formData });
+        const res = await fetch(`${API}/imagenes`, { method: 'POST', body: formData });
         const data = await res.json();
         document.getElementById('prod-imagenUrl').value = data.url;
         estado.textContent = 'Imagen subida';
@@ -208,13 +206,13 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
     if (id) {
         await fetch(`${API}/productos/${id}`, {
             method: 'PUT',
-            headers: adminHeaders({ 'Content-Type': 'application/json' }),
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
     } else {
         await fetch(`${API}/productos`, {
             method: 'POST',
-            headers: adminHeaders({ 'Content-Type': 'application/json' }),
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
     }
@@ -249,13 +247,13 @@ function cancelarProducto() {
 
 async function eliminarProducto(id) {
     if (confirm('Eliminar este producto?')) {
-        await fetch(`${API}/productos/${id}`, { method: 'DELETE', headers: adminHeaders() });
+        await fetch(`${API}/productos/${id}`, { method: 'DELETE' });
         cargarProductos();
     }
 }
 
 async function cargarPedidos() {
-    const res = await fetch(`${API}/pedidos`, { headers: adminHeaders() });
+    const res = await fetch(`${API}/pedidos`);
     const pedidos = await res.json();
     const lista = document.getElementById('lista-pedidos');
 

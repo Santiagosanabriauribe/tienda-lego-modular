@@ -107,6 +107,10 @@ public class PedidoService {
         return pedidoRepo.save(pedido);
     }
 
+    public java.util.Optional<Pedido> buscarPorId(String id) {
+        return pedidoRepo.findById(id);
+    }
+
     public List<Pedido> listarPorUsuario(String usuarioId) {
         return pedidoRepo.findByUsuarioIdOrderByFechaDesc(usuarioId);
     }
