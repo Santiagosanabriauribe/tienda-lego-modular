@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Secretos y certificados ###
+.env
+keystore.p12
